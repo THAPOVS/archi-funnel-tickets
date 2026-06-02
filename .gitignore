@@ -1,0 +1,36 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Secrets (NUNCA commitear)
+secrets/
+**/secrets/
+*.env
+.env
+.env.*
+**/credentials*
+**/*_webhook_url*
+**/bot-tickets-credentials*
+
+# Builds / generados
+*.zip
+node_modules/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*~
+
+# Backups locales (los planning docs viejos viven en parent, no en este repo)
+*-backup-*
+*.bak
+
+# Capturas pesadas que no aportan (la version final vive en screenshots/)
+screenshots-playwright/

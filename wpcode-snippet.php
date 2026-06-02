@@ -1,0 +1,869 @@
+<?php
+/**
+ * Archibrazo - Preview del funnel de checkout rediseñado (staging visual)
+ *
+ * Snippet UI-only para WPCode Lite. NO toca WooCommerce, FooEvents, PeproDev,
+ * el snippet del bot Telegram, ni ningún hook de orden. Solo renderea un HTML
+ * estático cuando se accede a una URL específica con un usuario logueado.
+ *
+ * --------------------------------------------------------------------------
+ * INSTRUCCIONES DE INSTALACIÓN
+ * --------------------------------------------------------------------------
+ * 1. WP admin → Code Snippets / WPCode → Add Snippet → "Add Your Custom Code"
+ * 2. Tipo: PHP Snippet
+ * 3. Title: "Archi Funnel Preview (staging)"
+ * 4. Pegar este código completo
+ * 5. Insertion: "Auto Insert" → "Run Everywhere"
+ * 6. Save + Activate
+ *
+ * --------------------------------------------------------------------------
+ * CÓMO VERLO
+ * --------------------------------------------------------------------------
+ * Estando logueado como Administrator o Shop Manager, abrir:
+ *
+ *     https://www.archibrazo.org/?archi_funnel_preview=1
+ *
+ * No es accesible para usuarios públicos ni para Google (responde 403 si no
+ * tenés permiso, y nunca aparece linkeado desde el sitio).
+ *
+ * --------------------------------------------------------------------------
+ * GARANTÍAS DE NO-ROTURA
+ * --------------------------------------------------------------------------
+ * - Solo dispara si está la query param exacta `archi_funnel_preview=1`.
+ * - Solo dispara para usuarios con capability `manage_options` o `manage_woocommerce`.
+ * - No registra rewrite rules, no crea custom post types, no toca DB.
+ * - No engancha hooks de WooCommerce / FooEvents / PeproDev.
+ * - Si lo desactivás desde WPCode, el sitio queda EXACTAMENTE igual a hoy.
+ *
+ * Rollback: WPCode → Snippets → este snippet → Deactivate. 5 segundos.
+ */
+
+add_action('template_redirect', function() {
+
+    // Guardrail 1: query param explícita
+    if (!isset($_GET['archi_funnel_preview']) || $_GET['archi_funnel_preview'] !== '1') {
+        return;
+    }
+
+    // Guardrail 2: solo para admins o gestores de tienda
+    if (!current_user_can('manage_options') && !current_user_can('manage_woocommerce')) {
+        status_header(403);
+        nocache_headers();
+        wp_die(
+            'No tenés permiso para ver este preview. Logueate como admin de archibrazo.org.',
+            'Acceso denegado',
+            array('response' => 403)
+        );
+    }
+
+    // Headers para que no se cachee el preview
+    nocache_headers();
+    header('Content-Type: text/html; charset=utf-8');
+    header('X-Robots-Tag: noindex, nofollow');
+
+    // HTML completo del prototipo (UI-only, autocontenido)
+    echo <<<'ARCHI_FUNNEL_HTML_END_2026'
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archibrazo - Checkout (prototipo staging)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          display: ['Fraunces', 'serif'],
+          sans: ['Manrope', 'system-ui', 'sans-serif'],
+        },
+        colors: {
+          ink: {
+            900: '#0a0a0a',
+            800: '#101010',
+            700: '#161616',
+            600: '#1f1f1f',
+            500: '#2a2a2a',
+          },
+          paper: {
+            50: '#f5f1ea',
+            200: '#d6cfc1',
+            400: '#a8a29e',
+            500: '#78716c',
+          },
+          archi: {
+            pink: '#ff3d7f',
+            orange: '#ff8a3d',
+            yellow: '#fbbf24',
+            green: '#34d399',
+            red: '#f87171',
+          }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  :root { color-scheme: dark; }
+  html, body { background: #0a0a0a; }
+  body {
+    font-family: 'Manrope', system-ui, sans-serif;
+    color: #f5f1ea;
+    background:
+      radial-gradient(ellipse at 20% 0%, rgba(255, 61, 127, 0.08) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 100%, rgba(255, 138, 61, 0.06) 0%, transparent 50%),
+      #0a0a0a;
+    background-attachment: fixed;
+    line-height: 1.7;
+  }
+  .font-display { font-family: 'Fraunces', serif; letter-spacing: -0.025em; }
+  h1, h2, h3 { letter-spacing: -0.03em; }
+
+  /* Grain */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  main { position: relative; z-index: 2; }
+
+  /* CTA gradient */
+  .btn-primary {
+    background: linear-gradient(95deg, #ff3d7f 0%, #ff8a3d 100%);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.15) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.2) inset,
+      0 16px 32px -16px rgba(255, 61, 127, 0.5),
+      0 8px 16px -8px rgba(0, 0, 0, 0.4);
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 180ms ease;
+  }
+  .btn-primary:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.2) inset,
+      0 -1px 0 rgba(0, 0, 0, 0.2) inset,
+      0 24px 40px -16px rgba(255, 61, 127, 0.6),
+      0 12px 24px -8px rgba(0, 0, 0, 0.5);
+  }
+  .btn-primary:active:not(:disabled) {
+    transform: translateY(0);
+  }
+  .btn-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: #2a2a2a;
+    box-shadow: none;
+  }
+
+  .card {
+    background: linear-gradient(180deg, #1a1a1a 0%, #141414 100%);
+    border: 1px solid rgba(245, 241, 234, 0.08);
+    border-radius: 20px;
+    box-shadow:
+      0 1px 0 rgba(245, 241, 234, 0.04) inset,
+      0 24px 48px -24px rgba(0, 0, 0, 0.7);
+  }
+
+  .step-section { display: none; }
+  .step-section.active { display: block; animation: fadeIn 320ms cubic-bezier(0.16, 1, 0.3, 1); }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stepper */
+  .step-dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    transition: all 220ms ease;
+  }
+  .step-dot.pending {
+    background: #1f1f1f;
+    color: #78716c;
+    border: 1px solid rgba(245, 241, 234, 0.08);
+  }
+  .step-dot.current {
+    background: linear-gradient(95deg, #ff3d7f, #ff8a3d);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.15), 0 8px 16px -8px rgba(255, 61, 127, 0.5);
+  }
+  .step-dot.completed {
+    background: #34d399;
+    color: #0a0a0a;
+  }
+  .step-line {
+    flex: 1;
+    height: 2px;
+    background: rgba(245, 241, 234, 0.08);
+    transition: background 220ms ease;
+  }
+  .step-line.completed { background: #34d399; }
+
+  /* Inputs */
+  input[type="text"], input[type="email"], input[type="tel"] {
+    background: #161616;
+    border: 1px solid rgba(245, 241, 234, 0.1);
+    border-radius: 12px;
+    padding: 14px 16px;
+    width: 100%;
+    color: #f5f1ea;
+    font-family: inherit;
+    font-size: 15px;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+  }
+  input:focus {
+    outline: none;
+    border-color: #ff3d7f;
+    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.12);
+  }
+  input::placeholder { color: #57534e; }
+  label { color: #d6cfc1; font-size: 13px; font-weight: 500; margin-bottom: 6px; display: block; }
+
+  /* Warning banner */
+  .warning-banner {
+    background: linear-gradient(95deg, rgba(251, 191, 36, 0.12), rgba(255, 138, 61, 0.08));
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: #fde68a;
+    border-radius: 14px;
+    padding: 16px 18px;
+  }
+  .warning-banner strong { color: #fbbf24; }
+
+  /* Upload area */
+  .drop-zone {
+    border: 2px dashed rgba(245, 241, 234, 0.15);
+    border-radius: 16px;
+    padding: 32px 20px;
+    text-align: center;
+    transition: all 220ms ease;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.01);
+  }
+  .drop-zone:hover, .drop-zone.dragging {
+    border-color: #ff3d7f;
+    background: rgba(255, 61, 127, 0.06);
+  }
+  .drop-zone.uploaded {
+    border-style: solid;
+    border-color: #34d399;
+    background: rgba(52, 211, 153, 0.05);
+  }
+
+  /* QR placeholder */
+  .qr-frame {
+    width: 240px;
+    height: 240px;
+    background: #fafafa;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow:
+      0 0 0 1px rgba(0, 0, 0, 0.05),
+      0 24px 48px -16px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Devnav (solo prototipo) */
+  .devnav {
+    position: fixed; bottom: 14px; right: 14px;
+    z-index: 100;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(245, 241, 234, 0.12);
+    border-radius: 10px;
+    padding: 8px;
+    font-size: 11px;
+    display: flex;
+    gap: 4px;
+    box-shadow: 0 16px 32px -8px rgba(0,0,0,0.6);
+  }
+  @media (max-width: 640px) {
+    .devnav {
+      bottom: auto;
+      top: 60px;
+      right: 8px;
+      left: 8px;
+      font-size: 10px;
+      padding: 6px;
+    }
+    .devnav button { padding: 5px 6px; }
+  }
+  .devnav button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: transparent;
+    color: #a8a29e;
+    transition: background 160ms ease;
+    font-family: ui-monospace, monospace;
+  }
+  .devnav button:hover { background: rgba(255, 61, 127, 0.15); color: #f5f1ea; }
+  .devnav button.active { background: #ff3d7f; color: white; }
+
+  /* Sticky CTA mobile */
+  .sticky-cta-mobile {
+    position: sticky;
+    bottom: 0;
+    background: linear-gradient(180deg, transparent, #0a0a0a 30%);
+    padding: 16px 0 20px;
+    margin-top: 8px;
+  }
+
+  @media (max-width: 640px) {
+    .step-dot { width: 32px; height: 32px; font-size: 13px; }
+    .step-label-desktop { display: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- Header minimal -->
+<header class="border-b border-paper-50/5">
+  <div class="max-w-5xl mx-auto px-5 py-4 flex items-center justify-between">
+    <a href="#paso-1" class="flex items-center gap-2.5">
+      <div class="w-9 h-9 rounded-xl flex items-center justify-center" style="background: linear-gradient(135deg, #ff3d7f, #ff8a3d);">
+        <span class="font-display font-bold text-white text-lg leading-none">a</span>
+      </div>
+      <span class="font-display font-semibold text-paper-50 text-lg leading-none">archibrazo</span>
+    </a>
+    <a href="#" class="text-sm text-paper-400 hover:text-paper-50 transition-colors">Salir</a>
+  </div>
+</header>
+
+<main class="max-w-3xl mx-auto px-5 py-8 sm:py-12">
+
+  <!-- Stepper -->
+  <nav aria-label="Progreso de la compra" class="mb-10 sm:mb-14">
+    <ol class="flex items-center gap-2 sm:gap-3">
+      <li class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="step-dot pending" data-step-dot="1">1</div>
+        <span class="text-xs sm:text-sm text-paper-400 step-label-desktop" data-step-label="1">Ticket</span>
+      </li>
+      <div class="step-line" data-step-line="1"></div>
+      <li class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="step-dot pending" data-step-dot="2">2</div>
+        <span class="text-xs sm:text-sm text-paper-400 step-label-desktop" data-step-label="2">Datos</span>
+      </li>
+      <div class="step-line" data-step-line="2"></div>
+      <li class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="step-dot pending" data-step-dot="3">3</div>
+        <span class="text-xs sm:text-sm text-paper-400 step-label-desktop" data-step-label="3">Pagar</span>
+      </li>
+      <div class="step-line" data-step-line="3"></div>
+      <li class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="step-dot pending" data-step-dot="4">4</div>
+        <span class="text-xs sm:text-sm text-paper-400 step-label-desktop" data-step-label="4">Comprobante</span>
+      </li>
+      <div class="step-line" data-step-line="4"></div>
+      <li class="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+        <div class="step-dot pending" data-step-dot="5">5</div>
+        <span class="text-xs sm:text-sm text-paper-400 step-label-desktop" data-step-label="5">Listo</span>
+      </li>
+    </ol>
+    <p class="text-xs text-paper-400 mt-3 sm:hidden" id="mobile-step-label">Paso 1 de 5 - Ticket</p>
+  </nav>
+
+  <!-- ============================================ -->
+  <!-- PASO 1: Tu ticket                            -->
+  <!-- ============================================ -->
+  <section class="step-section" id="paso-1" aria-labelledby="h1-paso-1">
+    <p class="text-archi-pink font-semibold text-sm uppercase tracking-wider mb-2">Tu ticket</p>
+    <h1 id="h1-paso-1" class="font-display text-4xl sm:text-5xl font-medium text-paper-50 mb-2">Revisá lo que vas a llevarte</h1>
+    <p class="text-paper-400 text-base sm:text-lg mb-8">Confirmá el evento, la cantidad y la variante. Después seguimos con tus datos.</p>
+
+    <!-- Item del carrito -->
+    <div class="card p-5 sm:p-6 mb-5">
+      <div class="flex gap-5">
+        <div class="flex-shrink-0 w-24 sm:w-32 aspect-[3/4] rounded-xl overflow-hidden bg-ink-600" style="background: linear-gradient(135deg, #2a1a2a, #1a1a2a);">
+          <div class="w-full h-full flex items-center justify-center text-paper-400 text-xs text-center px-2">
+            <div>
+              <div class="font-display text-paper-50 text-lg font-medium mb-1">LOCRAZO</div>
+              <div>Verde Ruderal</div>
+              <div class="text-[10px] mt-1 opacity-60">25 mayo</div>
+            </div>
+          </div>
+        </div>
+        <div class="flex-1 min-w-0">
+          <h3 class="font-display text-xl sm:text-2xl font-medium text-paper-50 leading-tight mb-1">peña 25 mayo</h3>
+          <p class="text-paper-400 text-sm mb-3">Verde Ruderal · Banquete locrazo</p>
+          <div class="flex items-center gap-2 mb-4">
+            <span class="text-xs px-2 py-1 rounded-full bg-archi-pink/15 text-archi-pink font-semibold">Carne</span>
+            <span class="text-xs px-2 py-1 rounded-full bg-paper-50/10 text-paper-200">Para servir</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-3 bg-ink-700 rounded-full p-1 border border-paper-50/8">
+              <button type="button" aria-label="Restar uno" class="w-8 h-8 rounded-full text-paper-200 hover:bg-paper-50/10 transition-colors flex items-center justify-center" onclick="changeQty(-1)">−</button>
+              <span id="qty" class="text-paper-50 font-semibold tabular-nums min-w-[20px] text-center">1</span>
+              <button type="button" aria-label="Sumar uno" class="w-8 h-8 rounded-full text-paper-200 hover:bg-paper-50/10 transition-colors flex items-center justify-center" onclick="changeQty(1)">+</button>
+            </div>
+            <div class="text-right">
+              <p class="text-xs text-paper-400">Subtotal</p>
+              <p class="font-display text-2xl font-medium text-paper-50" id="subtotal">$22.000</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cupón colapsable -->
+    <details class="mb-5">
+      <summary class="text-sm text-paper-400 hover:text-paper-50 cursor-pointer transition-colors flex items-center gap-2 py-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        ¿Tenés un código de descuento?
+      </summary>
+      <div class="mt-3 flex gap-2">
+        <input type="text" placeholder="Ingresá tu código" class="flex-1">
+        <button class="px-4 py-3 rounded-xl bg-ink-600 border border-paper-50/10 text-paper-50 text-sm font-semibold hover:bg-ink-500 transition-colors">Aplicar</button>
+      </div>
+    </details>
+
+    <!-- Totales -->
+    <div class="card p-5 sm:p-6 mb-8">
+      <div class="space-y-3 text-sm">
+        <div class="flex justify-between text-paper-200">
+          <span>Subtotal</span>
+          <span class="tabular-nums" id="totals-subtotal">$22.000</span>
+        </div>
+        <div class="flex justify-between text-paper-200">
+          <span class="flex items-center gap-1.5">
+            Cargo del servicio
+            <span class="group relative cursor-help">
+              <svg class="w-4 h-4 text-paper-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              <span class="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 w-56 p-2 bg-ink-500 border border-paper-50/10 rounded-lg text-xs text-paper-200 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">10% que sostiene el sistema de tickets, la barra y la cooperativa.</span>
+            </span>
+          </span>
+          <span class="tabular-nums" id="totals-fee">$2.200</span>
+        </div>
+        <div class="border-t border-paper-50/8 pt-3 flex justify-between items-baseline">
+          <span class="text-paper-50 font-display text-lg">Total</span>
+          <span class="font-display text-3xl font-medium text-paper-50 tabular-nums" id="totals-total">$24.200</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+      <a href="#" class="text-paper-400 text-sm hover:text-paper-50 transition-colors text-center sm:text-left">← Seguir comprando</a>
+      <button type="button" onclick="goTo(2)" class="btn-primary w-full sm:w-auto px-8 py-4 rounded-full text-white font-semibold text-base">
+        Continuar →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PASO 2: Tus datos                            -->
+  <!-- ============================================ -->
+  <section class="step-section" id="paso-2" aria-labelledby="h1-paso-2">
+    <p class="text-archi-pink font-semibold text-sm uppercase tracking-wider mb-2">Tus datos</p>
+    <h1 id="h1-paso-2" class="font-display text-4xl sm:text-5xl font-medium text-paper-50 mb-2">¿A dónde te mandamos el ticket?</h1>
+    <p class="text-paper-400 text-base sm:text-lg mb-8">Lo recibís por mail cuando confirmemos el pago. Si entrás con tu cuenta, los datos quedan precargados.</p>
+
+    <div class="card p-5 sm:p-7 mb-6">
+      <div class="grid sm:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" placeholder="Joaquín" value="Joaquín">
+        </div>
+        <div>
+          <label for="apellido">Apellido</label>
+          <input type="text" id="apellido" placeholder="Poviña" value="Poviña">
+        </div>
+      </div>
+      <div class="mb-4">
+        <label for="email">Email <span class="text-archi-pink">*</span></label>
+        <input type="email" id="email" placeholder="vos@ejemplo.com" value="joaquinpovina@gmail.com">
+        <p class="text-xs text-paper-400 mt-1.5">A esta dirección te mandamos el ticket. Revisá que esté bien.</p>
+      </div>
+      <div>
+        <label for="tel">Teléfono</label>
+        <input type="tel" id="tel" placeholder="11 1234 5678">
+        <p class="text-xs text-paper-400 mt-1.5">Por si hay un problema con el pago, te escribimos.</p>
+      </div>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+      <button onclick="goTo(1)" class="text-paper-400 text-sm hover:text-paper-50 transition-colors text-center sm:text-left">← Volver al carrito</button>
+      <button type="button" onclick="goTo(3)" class="btn-primary w-full sm:w-auto px-8 py-4 rounded-full text-white font-semibold text-base">
+        Continuar al pago →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PASO 3: Pagá por transferencia               -->
+  <!-- ============================================ -->
+  <section class="step-section" id="paso-3" aria-labelledby="h1-paso-3">
+    <p class="text-archi-pink font-semibold text-sm uppercase tracking-wider mb-2">Pago por transferencia</p>
+    <h1 id="h1-paso-3" class="font-display text-4xl sm:text-5xl font-medium text-paper-50 mb-2">Escaneá el QR desde tu app</h1>
+    <p class="text-paper-400 text-base sm:text-lg mb-6">Servís el ticket vos: pagás desde tu banco o billetera y nos mandás el comprobante en el próximo paso.</p>
+
+    <!-- Banner crítico -->
+    <div class="warning-banner mb-6 flex gap-3 items-start">
+      <svg class="w-5 h-5 flex-shrink-0 mt-0.5 text-archi-yellow" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+      </svg>
+      <p class="text-sm leading-relaxed">
+        <strong>Pagar sin subir el comprobante NO genera el ticket.</strong>
+        Te lleva 30 segundos más, pero sin ese paso no podés entrar al evento.
+      </p>
+    </div>
+
+    <div class="card p-6 sm:p-8 mb-6">
+      <div class="flex flex-col items-center text-center mb-6">
+        <div class="qr-frame mb-5">
+          <!-- Placeholder QR pattern (SVG) -->
+          <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg" aria-label="QR de pago">
+            <rect width="100" height="100" fill="#fafafa"/>
+            <g fill="#0a0a0a">
+              <!-- 3 finder patterns -->
+              <rect x="6" y="6" width="20" height="20"/>
+              <rect x="10" y="10" width="12" height="12" fill="#fafafa"/>
+              <rect x="13" y="13" width="6" height="6"/>
+              <rect x="74" y="6" width="20" height="20"/>
+              <rect x="78" y="10" width="12" height="12" fill="#fafafa"/>
+              <rect x="81" y="13" width="6" height="6"/>
+              <rect x="6" y="74" width="20" height="20"/>
+              <rect x="10" y="78" width="12" height="12" fill="#fafafa"/>
+              <rect x="13" y="81" width="6" height="6"/>
+              <!-- Decorative middle dots -->
+              <g>
+                <rect x="32" y="8" width="3" height="3"/><rect x="40" y="8" width="3" height="3"/><rect x="48" y="8" width="3" height="3"/><rect x="56" y="8" width="3" height="3"/><rect x="64" y="8" width="3" height="3"/>
+                <rect x="32" y="16" width="3" height="3"/><rect x="36" y="16" width="3" height="3"/><rect x="48" y="16" width="3" height="3"/><rect x="60" y="16" width="3" height="3"/><rect x="68" y="16" width="3" height="3"/>
+                <rect x="8" y="32" width="3" height="3"/><rect x="16" y="32" width="3" height="3"/><rect x="24" y="32" width="3" height="3"/><rect x="32" y="32" width="3" height="3"/><rect x="40" y="32" width="3" height="3"/><rect x="48" y="32" width="3" height="3"/><rect x="56" y="32" width="3" height="3"/><rect x="64" y="32" width="3" height="3"/><rect x="76" y="32" width="3" height="3"/><rect x="88" y="32" width="3" height="3"/>
+                <rect x="12" y="40" width="3" height="3"/><rect x="20" y="40" width="3" height="3"/><rect x="28" y="40" width="3" height="3"/><rect x="36" y="40" width="3" height="3"/><rect x="44" y="40" width="3" height="3"/><rect x="52" y="40" width="3" height="3"/><rect x="68" y="40" width="3" height="3"/><rect x="84" y="40" width="3" height="3"/>
+                <rect x="8" y="48" width="3" height="3"/><rect x="16" y="48" width="3" height="3"/><rect x="32" y="48" width="3" height="3"/><rect x="40" y="48" width="3" height="3"/><rect x="48" y="48" width="3" height="3"/><rect x="56" y="48" width="3" height="3"/><rect x="64" y="48" width="3" height="3"/><rect x="72" y="48" width="3" height="3"/><rect x="80" y="48" width="3" height="3"/>
+                <rect x="20" y="56" width="3" height="3"/><rect x="28" y="56" width="3" height="3"/><rect x="36" y="56" width="3" height="3"/><rect x="44" y="56" width="3" height="3"/><rect x="60" y="56" width="3" height="3"/><rect x="76" y="56" width="3" height="3"/><rect x="88" y="56" width="3" height="3"/>
+                <rect x="8" y="64" width="3" height="3"/><rect x="32" y="64" width="3" height="3"/><rect x="48" y="64" width="3" height="3"/><rect x="56" y="64" width="3" height="3"/><rect x="64" y="64" width="3" height="3"/><rect x="80" y="64" width="3" height="3"/>
+                <rect x="32" y="76" width="3" height="3"/><rect x="40" y="76" width="3" height="3"/><rect x="48" y="76" width="3" height="3"/><rect x="56" y="76" width="3" height="3"/><rect x="64" y="76" width="3" height="3"/><rect x="76" y="76" width="3" height="3"/><rect x="84" y="76" width="3" height="3"/>
+                <rect x="32" y="84" width="3" height="3"/><rect x="40" y="84" width="3" height="3"/><rect x="52" y="84" width="3" height="3"/><rect x="60" y="84" width="3" height="3"/><rect x="68" y="84" width="3" height="3"/><rect x="80" y="84" width="3" height="3"/><rect x="88" y="84" width="3" height="3"/>
+                <rect x="36" y="92" width="3" height="3"/><rect x="44" y="92" width="3" height="3"/><rect x="56" y="92" width="3" height="3"/><rect x="64" y="92" width="3" height="3"/><rect x="76" y="92" width="3" height="3"/>
+              </g>
+              <!-- Center logo -->
+              <circle cx="50" cy="50" r="9" fill="#fafafa"/>
+              <circle cx="50" cy="50" r="7" fill="#0a0a0a"/>
+              <text x="50" y="53" text-anchor="middle" fill="#fafafa" font-size="6" font-family="sans-serif" font-weight="bold">A</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="text-paper-400 text-xs uppercase tracking-widest mb-3">o transferí al alias</div>
+
+        <div class="flex items-center gap-2 mb-1 flex-wrap justify-center">
+          <code class="font-display text-3xl sm:text-4xl font-medium text-paper-50 tracking-tight" id="alias">ARCHICOOP</code>
+          <button onclick="copyAlias()" class="px-3 py-2 rounded-lg bg-ink-600 border border-paper-50/10 text-paper-200 hover:bg-ink-500 hover:text-paper-50 transition-colors text-sm flex items-center gap-1.5" aria-label="Copiar alias">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"/></svg>
+            <span id="copy-label">Copiar</span>
+          </button>
+        </div>
+
+        <p class="text-paper-400 text-sm">Monto exacto: <strong class="text-paper-50 tabular-nums">$24.200</strong></p>
+      </div>
+
+      <div class="border-t border-paper-50/8 pt-5">
+        <p class="text-paper-200 font-semibold text-sm uppercase tracking-wider mb-3">Cómo pagar</p>
+        <ol class="space-y-2.5 text-paper-200 text-sm">
+          <li class="flex gap-3"><span class="text-archi-pink font-bold tabular-nums">1.</span>Abrí la app de tu banco o billetera (Mercado Pago, Brubank, Galicia, etc).</li>
+          <li class="flex gap-3"><span class="text-archi-pink font-bold tabular-nums">2.</span>Buscá la opción de pagar con QR o transferir al alias <code class="text-archi-orange">ARCHICOOP</code>.</li>
+          <li class="flex gap-3"><span class="text-archi-pink font-bold tabular-nums">3.</span>Pagá el monto exacto y sacale screenshot al comprobante.</li>
+          <li class="flex gap-3"><span class="text-archi-pink font-bold tabular-nums">4.</span>Volvé acá y subí el comprobante en el siguiente paso.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+      <button onclick="goTo(2)" class="text-paper-400 text-sm hover:text-paper-50 transition-colors text-center sm:text-left">← Volver a datos</button>
+      <button type="button" onclick="goTo(4)" class="btn-primary w-full sm:w-auto px-8 py-4 rounded-full text-white font-semibold text-base">
+        Ya pagué, voy a subir el comprobante →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PASO 4: Subí el comprobante                  -->
+  <!-- ============================================ -->
+  <section class="step-section" id="paso-4" aria-labelledby="h1-paso-4">
+    <p class="text-archi-pink font-semibold text-sm uppercase tracking-wider mb-2">Último paso</p>
+    <h1 id="h1-paso-4" class="font-display text-4xl sm:text-5xl font-medium text-paper-50 mb-2">Subí tu comprobante</h1>
+    <p class="text-paper-400 text-base sm:text-lg mb-8">Sin este paso <strong class="text-paper-50">no se genera el ticket</strong>. Es lo único que nos falta para confirmar tu lugar.</p>
+
+    <div class="card p-5 sm:p-7 mb-6">
+      <label for="comprobante-input" class="drop-zone block mb-5" id="dropzone" tabindex="0">
+        <div id="drop-empty">
+          <svg class="w-12 h-12 mx-auto mb-3 text-paper-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+          </svg>
+          <p class="text-paper-50 font-semibold mb-1">Arrastrá tu archivo o tocá para elegir</p>
+          <p class="text-paper-400 text-sm">Aceptamos PDF, JPG o PNG. Hasta 8 MB.</p>
+        </div>
+        <div id="drop-filled" class="hidden">
+          <svg class="w-12 h-12 mx-auto mb-3 text-archi-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <p class="text-paper-50 font-semibold mb-1" id="filename">comprobante-transferencia.pdf</p>
+          <p class="text-paper-400 text-sm mb-3" id="filesize">182 KB</p>
+          <button onclick="event.preventDefault(); resetFile()" class="text-archi-pink text-sm font-semibold hover:underline">Cambiar archivo</button>
+        </div>
+        <input type="file" id="comprobante-input" accept="image/png,image/jpeg,application/pdf" class="hidden" onchange="handleFile(this)">
+      </label>
+
+      <div class="bg-ink-700 rounded-xl p-4 mb-5 border border-paper-50/5">
+        <p class="text-xs text-paper-400 uppercase tracking-wider mb-2 font-semibold">Tu pedido</p>
+        <div class="flex justify-between items-baseline">
+          <span class="text-paper-200 text-sm">peña 25 mayo · Verde Ruderal · Carne, Para servir</span>
+          <span class="font-display text-lg text-paper-50 tabular-nums">$24.200</span>
+        </div>
+      </div>
+
+      <label class="flex items-start gap-3 cursor-pointer">
+        <input type="checkbox" id="terms-check" class="mt-1 w-4 h-4 accent-archi-pink" onchange="checkSubmitState()">
+        <span class="text-paper-200 text-sm">He leído y estoy de acuerdo con los <a href="#" class="text-archi-pink underline hover:no-underline">términos y condiciones</a> y la <a href="#" class="text-archi-pink underline hover:no-underline">política de privacidad</a>.</span>
+      </label>
+    </div>
+
+    <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-4">
+      <button onclick="goTo(3)" class="text-paper-400 text-sm hover:text-paper-50 transition-colors text-center sm:text-left">← Volver al QR</button>
+      <button id="submit-btn" type="button" disabled onclick="goTo(5)" class="btn-primary w-full sm:w-auto px-8 py-4 rounded-full text-white font-semibold text-base">
+        Enviar comprobante y finalizar →
+      </button>
+    </div>
+  </section>
+
+  <!-- ============================================ -->
+  <!-- PASO 5: Listo                                -->
+  <!-- ============================================ -->
+  <section class="step-section" id="paso-5" aria-labelledby="h1-paso-5">
+    <div class="text-center mb-10">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-full mb-6" style="background: rgba(52, 211, 153, 0.12); border: 1px solid rgba(52, 211, 153, 0.35);">
+        <svg class="w-10 h-10 text-archi-green" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+        </svg>
+      </div>
+      <p class="text-archi-green font-semibold text-sm uppercase tracking-wider mb-2">Recibimos tu comprobante</p>
+      <h1 id="h1-paso-5" class="font-display text-4xl sm:text-5xl font-medium text-paper-50 mb-3">Gracias, Joaquín ✨</h1>
+      <p class="text-paper-200 text-base sm:text-lg max-w-md mx-auto">
+        Estamos verificando tu pago. Apenas lo confirmemos, te mandamos el ticket a <strong class="text-paper-50">joaquinpovina@gmail.com</strong>.
+      </p>
+    </div>
+
+    <div class="card p-5 sm:p-7 mb-6">
+      <div class="flex items-center gap-4 mb-5 pb-5 border-b border-paper-50/8">
+        <div class="w-12 h-12 rounded-full bg-archi-pink/15 text-archi-pink flex items-center justify-center flex-shrink-0">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div class="flex-1">
+          <p class="text-paper-50 font-semibold">Verificación manual</p>
+          <p class="text-paper-400 text-sm">Suele ser en minutos. Máximo 2 horas en horario del Archi.</p>
+        </div>
+      </div>
+
+      <p class="text-xs text-paper-400 uppercase tracking-wider mb-3 font-semibold">Resumen</p>
+      <div class="space-y-2 text-sm">
+        <div class="flex justify-between">
+          <span class="text-paper-400">Pedido</span>
+          <span class="text-paper-50 font-mono">#A-2026-1872</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-paper-400">Evento</span>
+          <span class="text-paper-50 text-right">peña 25 mayo · Verde Ruderal</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-paper-400">Fecha del show</span>
+          <span class="text-paper-50">Domingo 25/05, 21:00 hs</span>
+        </div>
+        <div class="flex justify-between pt-2 border-t border-paper-50/8">
+          <span class="text-paper-200 font-semibold">Total pagado</span>
+          <span class="text-paper-50 font-display text-lg tabular-nums">$24.200</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card p-5 sm:p-6 mb-6">
+      <p class="text-paper-50 font-semibold mb-1">Mientras tanto</p>
+      <p class="text-paper-400 text-sm mb-4">El Archi es Mario Bravo 441, Almagro. Llegate tipo 20:30 que se llena rápido.</p>
+      <div class="flex flex-col sm:flex-row gap-3">
+        <a href="#" class="flex-1 text-center px-5 py-3 rounded-full bg-ink-600 border border-paper-50/10 text-paper-50 text-sm font-semibold hover:bg-ink-500 transition-colors">Ver agenda completa →</a>
+        <a href="#" class="flex-1 text-center px-5 py-3 rounded-full bg-ink-600 border border-paper-50/10 text-paper-50 text-sm font-semibold hover:bg-ink-500 transition-colors">Cómo llegar 🗺️</a>
+      </div>
+    </div>
+
+    <div class="text-center">
+      <a href="#" class="text-paper-400 text-sm hover:text-paper-50 transition-colors">Volver al home archibrazo.org</a>
+    </div>
+  </section>
+
+</main>
+
+<!-- Footer -->
+<footer class="border-t border-paper-50/5 mt-16 py-8 text-center text-paper-400 text-xs relative z-2">
+  <p>Centro Cultural El Archibrazo · Mario Bravo 441, Almagro · Cooperativa de Trabajo Archicoop Ltda.</p>
+  <p class="mt-2 opacity-60">Prototipo de staging - no es la web real</p>
+</footer>
+
+<!-- Devnav: solo prototipo, NO va a producción -->
+<nav class="devnav" aria-label="Navegación del prototipo (solo staging)">
+  <button data-nav="1" onclick="goTo(1)" class="active">1·Ticket</button>
+  <button data-nav="2" onclick="goTo(2)">2·Datos</button>
+  <button data-nav="3" onclick="goTo(3)">3·Pagar</button>
+  <button data-nav="4" onclick="goTo(4)">4·Comprob.</button>
+  <button data-nav="5" onclick="goTo(5)">5·Listo</button>
+</nav>
+
+<script>
+  // ============================================
+  // Navegación entre pasos
+  // ============================================
+  const stepLabels = {
+    1: 'Ticket',
+    2: 'Datos',
+    3: 'Pagar',
+    4: 'Comprobante',
+    5: 'Listo'
+  };
+
+  function goTo(n) {
+    document.querySelectorAll('.step-section').forEach(s => s.classList.remove('active'));
+    document.getElementById('paso-' + n).classList.add('active');
+
+    // Stepper
+    for (let i = 1; i <= 5; i++) {
+      const dot = document.querySelector('[data-step-dot="' + i + '"]');
+      const label = document.querySelector('[data-step-label="' + i + '"]');
+      const line = document.querySelector('[data-step-line="' + i + '"]');
+      dot.classList.remove('pending', 'current', 'completed');
+      if (i < n) {
+        dot.classList.add('completed');
+        dot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+        if (label) label.classList.remove('text-paper-400'), label.classList.add('text-archi-green');
+        if (line) line.classList.add('completed');
+      } else if (i === n) {
+        dot.classList.add('current');
+        dot.textContent = i;
+        if (label) label.classList.remove('text-paper-400', 'text-archi-green'), label.classList.add('text-paper-50');
+        if (line) line.classList.remove('completed');
+      } else {
+        dot.classList.add('pending');
+        dot.textContent = i;
+        if (label) label.classList.remove('text-archi-green', 'text-paper-50'), label.classList.add('text-paper-400');
+        if (line) line.classList.remove('completed');
+      }
+    }
+
+    document.getElementById('mobile-step-label').textContent = 'Paso ' + n + ' de 5 - ' + stepLabels[n];
+
+    // Devnav
+    document.querySelectorAll('.devnav button').forEach(b => b.classList.remove('active'));
+    const navBtn = document.querySelector('.devnav [data-nav="' + n + '"]');
+    if (navBtn) navBtn.classList.add('active');
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    history.replaceState(null, '', '#paso-' + n);
+  }
+
+  // ============================================
+  // Cantidad en paso 1
+  // ============================================
+  let qty = 1;
+  const unitPrice = 22000;
+  const feeRate = 0.10;
+
+  function changeQty(delta) {
+    qty = Math.max(1, Math.min(10, qty + delta));
+    document.getElementById('qty').textContent = qty;
+    const sub = qty * unitPrice;
+    const fee = Math.round(sub * feeRate);
+    const fmt = (v) => '$' + v.toLocaleString('es-AR');
+    document.getElementById('subtotal').textContent = fmt(sub);
+    document.getElementById('totals-subtotal').textContent = fmt(sub);
+    document.getElementById('totals-fee').textContent = fmt(fee);
+    document.getElementById('totals-total').textContent = fmt(sub + fee);
+  }
+
+  // ============================================
+  // Copiar alias en paso 3
+  // ============================================
+  function copyAlias() {
+    navigator.clipboard?.writeText('ARCHICOOP').then(() => {
+      const lbl = document.getElementById('copy-label');
+      const original = lbl.textContent;
+      lbl.textContent = '✓ Copiado';
+      setTimeout(() => { lbl.textContent = original; }, 1800);
+    });
+  }
+
+  // ============================================
+  // Upload de comprobante (paso 4)
+  // ============================================
+  function handleFile(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    document.getElementById('drop-empty').classList.add('hidden');
+    document.getElementById('drop-filled').classList.remove('hidden');
+    document.getElementById('dropzone').classList.add('uploaded');
+    document.getElementById('filename').textContent = file.name;
+    const kb = Math.round(file.size / 1024);
+    document.getElementById('filesize').textContent = kb < 1024 ? kb + ' KB' : (kb / 1024).toFixed(1) + ' MB';
+    checkSubmitState();
+  }
+
+  function resetFile() {
+    document.getElementById('comprobante-input').value = '';
+    document.getElementById('drop-empty').classList.remove('hidden');
+    document.getElementById('drop-filled').classList.add('hidden');
+    document.getElementById('dropzone').classList.remove('uploaded');
+    checkSubmitState();
+  }
+
+  function checkSubmitState() {
+    const hasFile = !!document.getElementById('comprobante-input').files?.[0];
+    const hasTerms = document.getElementById('terms-check').checked;
+    document.getElementById('submit-btn').disabled = !(hasFile && hasTerms);
+  }
+
+  // Drag & drop visual feedback
+  const dz = document.getElementById('dropzone');
+  ['dragenter','dragover'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.add('dragging'); }));
+  ['dragleave','drop'].forEach(ev => dz.addEventListener(ev, (e) => { e.preventDefault(); dz.classList.remove('dragging'); }));
+  dz.addEventListener('drop', (e) => {
+    const file = e.dataTransfer?.files?.[0];
+    if (file) {
+      const input = document.getElementById('comprobante-input');
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      input.files = dt.files;
+      handleFile(input);
+    }
+  });
+
+  // ============================================
+  // Init
+  // ============================================
+  const hashMatch = window.location.hash.match(/paso-(\d)/);
+  goTo(hashMatch ? parseInt(hashMatch[1]) : 1);
+</script>
+
+</body>
+</html>
+
+ARCHI_FUNNEL_HTML_END_2026;
+
+    exit;
+
+}, 1); // prioridad 1: ejecutar antes que cualquier otro hook de template_redirect

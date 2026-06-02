@@ -1,0 +1,1774 @@
+/*
+ Theme Name: Astra Child Archibrazo
+ Description: Child theme de Astra con el rediseño del funnel de tickets de archibrazo.org. Aplica la paleta oscura, fuentes Andralis ND + Manrope, y templates de WC custom que reproducen el prototipo.
+ Author: El Archibrazo
+ Author URI: https://www.archibrazo.org
+ Template: astra
+ Version: 2.0.0
+ License: GNU General Public License v2 or later
+ Text Domain: astra-child-archibrazo
+*/
+
+/* ============================================================
+   PALETA Y VARIABLES
+   ============================================================ */
+:root {
+    --archi-pink: #ff3d7f;
+    --archi-orange: #ff8a3d;
+    --archi-yellow: #fbbf24;
+    --archi-green: #34d399;
+    --archi-red: #f87171;
+    --archi-ink-900: #0a0a0a;
+    --archi-ink-800: #101010;
+    --archi-ink-700: #161616;
+    --archi-ink-600: #1f1f1f;
+    --archi-ink-500: #2a2a2a;
+    --archi-paper-50: #f5f1ea;
+    --archi-paper-200: #d6cfc1;
+    --archi-paper-400: #a8a29e;
+    --archi-border: rgba(245, 241, 234, 0.08);
+    --archi-border-strong: rgba(245, 241, 234, 0.14);
+    --archi-card-bg: linear-gradient(180deg, var(--archi-ink-700), var(--archi-ink-600));
+    --archi-shadow: 0 1px 0 rgba(245, 241, 234, 0.04) inset, 0 24px 48px -24px rgba(0, 0, 0, 0.7);
+    --archi-gradient: linear-gradient(95deg, var(--archi-pink), var(--archi-orange));
+}
+
+/* ============================================================
+   BODY + WRAPPERS (solo páginas WC del flujo)
+   ============================================================ */
+body.woocommerce-cart,
+body.woocommerce-checkout,
+body.woocommerce-order-received,
+body.woocommerce-account {
+    background:
+        radial-gradient(ellipse at 20% 0%, rgba(255, 61, 127, 0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 100%, rgba(255, 138, 61, 0.04) 0%, transparent 50%),
+        var(--archi-ink-900);
+    color: var(--archi-paper-50);
+    font-family: 'Manrope', system-ui, sans-serif;
+    line-height: 1.6;
+}
+
+body.woocommerce-cart #content,
+body.woocommerce-checkout #content,
+body.woocommerce-order-received #content,
+body.woocommerce-account #content,
+body.woocommerce-cart .site-content,
+body.woocommerce-checkout .site-content,
+body.woocommerce-order-received .site-content,
+body.woocommerce-cart .site-content .ast-container,
+body.woocommerce-checkout .site-content .ast-container,
+body.woocommerce-order-received .site-content .ast-container {
+    background: transparent;
+    color: var(--archi-paper-50);
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 32px 24px;
+}
+
+/* Sidebar de Astra: lo ocultamos en checkout para no romper layout */
+body.woocommerce-cart #secondary,
+body.woocommerce-checkout #secondary,
+body.woocommerce-order-received #secondary {
+    display: none;
+}
+body.woocommerce-cart #primary,
+body.woocommerce-checkout #primary,
+body.woocommerce-order-received #primary {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+}
+
+/* ============================================================
+   TIPOGRAFÍA
+   ============================================================ */
+body.woocommerce-cart h1,
+body.woocommerce-cart h2,
+body.woocommerce-cart h3,
+body.woocommerce-checkout h1,
+body.woocommerce-checkout h2,
+body.woocommerce-checkout h3,
+body.woocommerce-order-received h1,
+body.woocommerce-order-received h2,
+body.woocommerce-order-received h3 {
+    font-family: 'AndralisND', Georgia, serif;
+    font-weight: 500;
+    color: var(--archi-paper-50);
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+}
+
+body.woocommerce-cart .entry-title,
+body.woocommerce-checkout .entry-title,
+body.woocommerce-order-received .entry-title {
+    display: none; /* Ocultamos el título default de WP, los templates custom traen el suyo */
+}
+
+/* ============================================================
+   PAGE HEADING (eyebrow + título + sub) - rendered desde hooks
+   ============================================================ */
+.archi-page-heading {
+    max-width: 920px;
+    margin: 0 auto 32px;
+    padding: 0 16px;
+    text-align: left;
+}
+.archi-page-title {
+    font-family: 'AndralisND', Georgia, serif !important;
+    font-size: clamp(32px, 5vw, 48px) !important;
+    font-weight: 500 !important;
+    color: var(--archi-paper-50) !important;
+    letter-spacing: -0.025em !important;
+    margin: 0 0 8px !important;
+    line-height: 1.1 !important;
+}
+.archi-page-sub {
+    color: var(--archi-paper-400) !important;
+    font-size: 16px !important;
+    margin: 0 !important;
+}
+
+/* Ocultar el H1 default de WP de las páginas WC para no duplicar */
+body.woocommerce-cart .entry-title,
+body.woocommerce-cart .page-title,
+body.woocommerce-checkout .entry-title,
+body.woocommerce-checkout .page-title,
+body.woocommerce-cart h1.entry-title,
+body.woocommerce-checkout h1.entry-title {
+    display: none !important;
+}
+
+/* ============================================================
+   STEPPER (rendered desde functions.php)
+   ============================================================ */
+.archi-funnel-stepper {
+    max-width: 920px;
+    margin: 0 auto 40px;
+    padding: 0 16px;
+}
+.archi-funnel-stepper__list {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.archi-funnel-stepper__item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+.archi-funnel-stepper__dot {
+    width: 36px;
+    height: 36px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+    transition: all 220ms ease;
+    flex-shrink: 0;
+}
+.archi-funnel-stepper__dot.pending {
+    background: var(--archi-ink-600);
+    color: var(--archi-paper-400);
+    border: 1px solid var(--archi-border);
+}
+.archi-funnel-stepper__dot.current {
+    background: var(--archi-gradient);
+    color: white;
+    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.15), 0 8px 16px -8px rgba(255, 61, 127, 0.5);
+}
+.archi-funnel-stepper__dot.completed {
+    background: var(--archi-green);
+    color: var(--archi-ink-900);
+}
+.archi-funnel-stepper__line {
+    flex: 1;
+    min-width: 24px;
+    height: 2px;
+    background: var(--archi-border);
+    transition: background 220ms ease;
+}
+.archi-funnel-stepper__line.completed { background: var(--archi-green); }
+.archi-funnel-stepper__label {
+    font-size: 14px;
+    font-family: 'Manrope', sans-serif;
+    color: var(--archi-paper-400);
+}
+.archi-funnel-stepper__mobile {
+    display: none;
+    text-align: center;
+    color: var(--archi-paper-400);
+    font-size: 13px;
+    margin-top: 12px;
+}
+
+/* ============================================================
+   COMPONENTS COMUNES
+   ============================================================ */
+.archi-eyebrow {
+    color: var(--archi-pink);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 8px;
+    font-family: 'Manrope', sans-serif;
+}
+.archi-eyebrow--yellow { color: var(--archi-yellow); }
+.archi-eyebrow--green { color: var(--archi-green); }
+.archi-eyebrow--red { color: var(--archi-red); }
+
+.archi-input {
+    background: var(--archi-ink-700);
+    border: 1px solid var(--archi-border-strong);
+    border-radius: 12px;
+    padding: 14px 16px;
+    width: 100%;
+    color: var(--archi-paper-50);
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+}
+.archi-input:focus {
+    outline: none;
+    border-color: var(--archi-pink);
+    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.12);
+}
+.archi-input::placeholder { color: #57534e; }
+
+.archi-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-size: 15px;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1), background 180ms ease;
+}
+.archi-btn--primary {
+    background: var(--archi-gradient);
+    color: white;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 16px 32px -16px rgba(255, 61, 127, 0.5);
+}
+.archi-btn--primary:hover { transform: translateY(-2px); color: white; }
+.archi-btn--secondary {
+    background: var(--archi-ink-600);
+    color: var(--archi-paper-50);
+    border: 1px solid var(--archi-border-strong);
+}
+.archi-btn--secondary:hover {
+    background: var(--archi-ink-500);
+    color: var(--archi-paper-50);
+    transform: translateY(-1px);
+}
+
+/* ============================================================
+   CART TEMPLATE
+   ============================================================ */
+.archi-cart-wrap { max-width: 920px; margin: 0 auto; }
+.archi-cart-title {
+    font-size: clamp(32px, 5vw, 48px);
+    font-weight: 500;
+    margin: 0 0 8px;
+}
+.archi-cart-sub {
+    color: var(--archi-paper-400);
+    font-size: 16px;
+    margin: 0 0 32px;
+}
+
+.archi-cart-items {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+/* Fix: el wrapper .woocommerce-cart-form hereda border-radius: 20px 20px 1px 1px
+   de Royal Elementor o algún plugin. Forzamos las 4 esquinas redondeadas para que
+   no choque visualmente con la card .archi-totals que viene debajo. */
+body.woocommerce-cart form.woocommerce-cart-form {
+    border-radius: 20px !important;
+    overflow: hidden;
+}
+/* Y separación entre la card de items y la de totales */
+body.woocommerce-cart form.woocommerce-cart-form + .cart-collaterals,
+body.woocommerce-cart form.woocommerce-cart-form + .archi-cart-summary {
+    margin-top: 20px !important;
+}
+.archi-cart-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 20px;
+    padding: 20px;
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    box-shadow: var(--archi-shadow);
+    align-items: start;
+}
+.archi-cart-item__media {
+    width: 96px;
+    aspect-ratio: 3/4;
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--archi-ink-600);
+    flex-shrink: 0;
+}
+.archi-cart-item__media img {
+    width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.archi-cart-item__body { min-width: 0; flex: 1; }
+.archi-cart-item__title {
+    font-size: 20px;
+    margin: 0 0 6px;
+    line-height: 1.2;
+}
+.archi-cart-item__title a {
+    color: var(--archi-paper-50);
+    text-decoration: none;
+}
+.archi-cart-item__title a:hover { color: var(--archi-pink); }
+.archi-cart-item .variation,
+.archi-cart-item .wc-item-meta {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 12px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.archi-cart-item .variation dt,
+.archi-cart-item .variation dd,
+.archi-cart-item .wc-item-meta li {
+    font-size: 12px;
+    color: var(--archi-paper-200);
+    background: var(--archi-ink-600);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin: 0;
+}
+.archi-cart-item__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+.archi-cart-item__qty .quantity {
+    display: flex;
+    align-items: center;
+    background: var(--archi-ink-700);
+    border: 1px solid var(--archi-border);
+    border-radius: 999px;
+    padding: 4px;
+    gap: 4px;
+}
+.archi-cart-item__qty .quantity input {
+    background: transparent;
+    border: none;
+    color: var(--archi-paper-50);
+    width: 40px;
+    text-align: center;
+    font-family: inherit;
+    font-weight: 600;
+}
+.archi-cart-item__qty .quantity .qty-button,
+.archi-cart-item__qty .quantity button {
+    background: transparent;
+    border: none;
+    color: var(--archi-paper-200);
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    cursor: pointer;
+}
+.archi-cart-item__qty .quantity button:hover {
+    background: var(--archi-paper-50);
+    background: rgba(245,241,234,0.08);
+}
+.archi-cart-item__subtotal { text-align: right; }
+.archi-cart-item__subtotal-label {
+    display: block;
+    font-size: 12px;
+    color: var(--archi-paper-400);
+}
+.archi-cart-item__subtotal-value {
+    display: block;
+    font-family: 'AndralisND', serif;
+    font-size: 22px;
+    font-weight: 500;
+    color: var(--archi-paper-50);
+}
+.archi-cart-item__remove {
+    display: flex;
+    align-self: start;
+}
+.archi-cart-item__remove-btn {
+    width: 32px; height: 32px;
+    border-radius: 999px;
+    background: var(--archi-ink-600);
+    color: var(--archi-paper-400);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    font-size: 18px;
+    border: 1px solid var(--archi-border);
+    transition: background 180ms ease;
+}
+.archi-cart-item__remove-btn:hover {
+    background: var(--archi-red);
+    color: white;
+}
+
+.archi-cart-coupon {
+    margin: 20px 0;
+}
+.archi-cart-coupon summary {
+    cursor: pointer;
+    color: var(--archi-paper-400);
+    font-size: 14px;
+    padding: 8px 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.archi-cart-coupon summary::-webkit-details-marker { display: none; }
+.archi-cart-coupon summary:hover { color: var(--archi-paper-50); }
+.archi-cart-coupon__form {
+    display: flex;
+    gap: 12px;
+    margin-top: 8px;
+}
+.archi-cart-coupon__input { flex: 1; }
+
+/* CART TOTALS - sacar lineas blancas default de WC */
+body.woocommerce-cart .cart_totals table,
+body.woocommerce-cart .cart_totals table tr,
+body.woocommerce-cart .cart_totals table td,
+body.woocommerce-cart .cart_totals table th,
+body.woocommerce-cart .cart-collaterals .cart_totals table,
+body.woocommerce-cart .cart-collaterals .cart_totals table tr,
+body.woocommerce-cart .cart-collaterals .cart_totals table td,
+body.woocommerce-cart .cart-collaterals .cart_totals table th {
+    border: none !important;
+    border-top: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    background: transparent !important;
+}
+/* Solo el border-bottom entre filas para separación visual sutil */
+body.woocommerce-cart .cart_totals table tr {
+    border-bottom: 1px solid var(--archi-border) !important;
+}
+body.woocommerce-cart .cart_totals table tr:last-child {
+    border-bottom: none !important;
+}
+body.woocommerce-cart .cart_totals table td,
+body.woocommerce-cart .cart_totals table th {
+    padding: 12px 0 !important;
+    color: var(--archi-paper-200) !important;
+}
+body.woocommerce-cart .cart_totals table td {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums !important;
+}
+body.woocommerce-cart .cart_totals table tr.order-total td,
+body.woocommerce-cart .cart_totals table tr.order-total th {
+    color: var(--archi-paper-50) !important;
+    font-family: 'AndralisND', serif !important;
+    font-weight: 500 !important;
+    font-size: 18px !important;
+}
+body.woocommerce-cart .cart_totals table tr.order-total td {
+    font-size: 22px !important;
+    font-weight: 600 !important;
+}
+
+/* CART TOTALS - layout horizontal en desktop */
+.archi-cart-summary { margin-top: 16px; }
+.archi-totals {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    box-shadow: var(--archi-shadow);
+    padding: 24px;
+}
+.archi-totals__header { margin-bottom: 16px; }
+.archi-totals__title {
+    font-size: 20px;
+    margin: 0;
+}
+.archi-totals__table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Manrope', sans-serif;
+}
+.archi-totals__row th,
+.archi-totals__row td {
+    padding: 8px 0;
+    text-align: left;
+    border: none;
+    color: var(--archi-paper-200);
+    font-weight: 500;
+    font-size: 14px;
+}
+.archi-totals__row td { text-align: right; font-variant-numeric: tabular-nums; }
+.archi-totals__row--total th,
+.archi-totals__row--total td {
+    border-top: 1px solid var(--archi-border);
+    padding-top: 12px;
+    font-size: 16px;
+    color: var(--archi-paper-50);
+}
+.archi-totals__row--total th { font-family: 'AndralisND', serif; font-weight: 500; }
+.archi-totals__row--total td {
+    font-family: 'AndralisND', serif;
+    font-size: 24px;
+    font-weight: 600;
+}
+.archi-totals__action { margin-top: 20px; }
+.archi-totals__action .checkout-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--archi-gradient);
+    color: white !important;
+    padding: 16px 40px;
+    border-radius: 999px;
+    text-decoration: none;
+    font-weight: 600;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 16px 32px -16px rgba(255, 61, 127, 0.5);
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: none;
+}
+.archi-totals__action .checkout-button:hover { transform: translateY(-2px); }
+
+@media (min-width: 768px) {
+    .archi-totals {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "header header"
+            "body action";
+        gap: 0 32px;
+        align-items: end;
+    }
+    .archi-totals__header { grid-area: header; }
+    .archi-totals__body { grid-area: body; }
+    .archi-totals__action { grid-area: action; margin-top: 0; }
+}
+
+/* ============================================================
+   CHECKOUT - layout y form
+   ============================================================ */
+.archi-checkout-wrap {
+    max-width: 720px;
+    margin: 0 auto;
+}
+body.woocommerce-checkout form.checkout {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 0 16px;
+}
+/* En mobile más angosto */
+@media (max-width: 768px) {
+    body.woocommerce-checkout form.checkout {
+        max-width: 100%;
+        padding: 0 12px;
+    }
+}
+
+/* En desktop el form de datos se ve más ancho */
+@media (min-width: 768px) {
+    body.woocommerce-checkout form.checkout .woocommerce-billing-fields,
+    body.woocommerce-checkout form.checkout .woocommerce-additional-fields {
+        max-width: 920px !important;
+        margin: 0 auto !important;
+    }
+    body.woocommerce-checkout form.checkout #order_review,
+    body.woocommerce-checkout form.checkout #order_review_heading {
+        max-width: 920px !important;
+        margin: 0 auto !important;
+    }
+    body.woocommerce-checkout form.checkout #order_review_heading {
+        text-align: center;
+    }
+}
+body.woocommerce-checkout form.checkout #customer_details,
+body.woocommerce-checkout form.checkout .col2-set,
+body.woocommerce-checkout form.checkout .col2-set > .col-1,
+body.woocommerce-checkout form.checkout .col2-set > .col-2,
+body.woocommerce-checkout form.checkout #customer_details > .col-1,
+body.woocommerce-checkout form.checkout #customer_details > .col-2,
+body.woocommerce-checkout form.checkout .woocommerce-billing-fields,
+body.woocommerce-checkout form.checkout .woocommerce-additional-fields,
+body.woocommerce-checkout form.checkout #order_review,
+body.woocommerce-checkout form.checkout #order_review_heading {
+    width: 100%;
+    max-width: 100%;
+    float: none;
+    clear: both;
+}
+
+body.woocommerce-checkout h3.woocommerce-billing-fields__title,
+body.woocommerce-checkout h3.woocommerce-additional-fields__title,
+body.woocommerce-checkout h3#order_review_heading {
+    font-size: 24px;
+    margin: 24px 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--archi-border);
+}
+
+body.woocommerce-checkout .form-row {
+    margin-bottom: 16px;
+}
+body.woocommerce-checkout .form-row label {
+    color: var(--archi-paper-200);
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    display: block;
+}
+body.woocommerce-checkout .form-row input,
+body.woocommerce-checkout .form-row select,
+body.woocommerce-checkout .form-row textarea {
+    background: var(--archi-ink-700);
+    border: 1px solid var(--archi-border-strong);
+    border-radius: 12px;
+    padding: 14px 16px;
+    width: 100%;
+    color: var(--archi-paper-50);
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+}
+body.woocommerce-checkout .form-row input:focus,
+body.woocommerce-checkout .form-row select:focus,
+body.woocommerce-checkout .form-row textarea:focus {
+    outline: none;
+    border-color: var(--archi-pink);
+    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.12);
+}
+
+/* Order review (paso 3) - card oscura limpia */
+body.woocommerce-checkout #order_review {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: var(--archi-shadow);
+    max-width: 100%;
+}
+
+/* Header "Tu pedido" del step 3 - INTEGRADO con la card de abajo (sin wrapper blanco extra) */
+body.woocommerce-checkout form.checkout.archi-funnel-step-3 #order_review_heading {
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 0 16px 0 !important;
+    text-align: left !important;
+    font-size: 24px !important;
+    color: var(--archi-paper-50) !important;
+    font-family: 'AndralisND', serif !important;
+    font-weight: 500 !important;
+}
+body.woocommerce-checkout form.checkout.archi-funnel-step-3 #order_review {
+    border-radius: 20px !important;
+}
+
+/* Form en desktop: layout cómodo, no apretado, sin doble wrapper */
+@media (min-width: 768px) {
+    body.woocommerce-checkout form.checkout {
+        max-width: 920px !important;
+    }
+    body.woocommerce-checkout form.checkout.archi-funnel-step-3 #order_review_heading,
+    body.woocommerce-checkout form.checkout.archi-funnel-step-3 #order_review {
+        max-width: 920px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        width: 100% !important;
+    }
+    /* Datos personales en desktop: 2 columnas (nombre/apellido en fila, los demás full width) */
+    body.woocommerce-checkout form.checkout.archi-funnel-step-2 .woocommerce-billing-fields__field-wrapper {
+        max-width: 920px !important;
+        margin: 0 auto !important;
+    }
+}
+
+/* CHECKBOX de términos - fix layout (estaba roto, separado del texto) */
+body.woocommerce-checkout .woocommerce-terms-and-conditions-wrapper,
+body.woocommerce-checkout .form-row.terms,
+body.woocommerce-checkout p.form-row.validate-required {
+    display: block !important;
+    width: 100% !important;
+    max-width: 920px !important;
+    margin: 16px auto !important;
+}
+body.woocommerce-checkout .wc-terms-and-conditions,
+body.woocommerce-checkout label.woocommerce-form__label.checkbox {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    cursor: pointer !important;
+    color: var(--archi-paper-200) !important;
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    font-family: 'Manrope', sans-serif !important;
+}
+body.woocommerce-checkout input#terms,
+body.woocommerce-checkout .woocommerce-form__input-checkbox {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 2px 0 0 0 !important;
+    flex-shrink: 0 !important;
+    accent-color: var(--archi-pink) !important;
+    cursor: pointer !important;
+}
+body.woocommerce-checkout label.woocommerce-form__label.checkbox span {
+    flex: 1 !important;
+}
+body.woocommerce-checkout .woocommerce-terms-and-conditions-checkbox-text a {
+    color: var(--archi-pink) !important;
+    text-decoration: underline !important;
+}
+body.woocommerce-checkout #order_review_table {
+    border: none;
+    background: transparent;
+}
+body.woocommerce-checkout #order_review_table th,
+body.woocommerce-checkout #order_review_table td {
+    background: transparent;
+    border: none;
+    padding: 12px 0;
+    color: var(--archi-paper-200);
+}
+body.woocommerce-checkout #order_review_table tfoot .order-total td,
+body.woocommerce-checkout #order_review_table tfoot .order-total th {
+    border-top: 1px solid var(--archi-border);
+    padding-top: 16px;
+    font-family: 'AndralisND', serif;
+    font-size: 18px;
+    color: var(--archi-paper-50);
+}
+
+/* Botones del checkout */
+body.woocommerce-checkout #place_order {
+    background: var(--archi-gradient);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 999px;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 16px 32px -16px rgba(255, 61, 127, 0.5);
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    width: 100%;
+    margin-top: 16px;
+}
+body.woocommerce-checkout #place_order:hover { transform: translateY(-2px); }
+
+/* Multi-step show/hide */
+form.checkout.archi-funnel-step-2 #order_review_heading,
+form.checkout.archi-funnel-step-2 #order_review {
+    display: none !important;
+}
+form.checkout.archi-funnel-step-3 .woocommerce-billing-fields,
+form.checkout.archi-funnel-step-3 .woocommerce-additional-fields,
+form.checkout.archi-funnel-step-3 .archi-funnel-continue-wrap {
+    display: none !important;
+}
+form.checkout.archi-funnel-step-2 .archi-funnel-back-wrap { display: none !important; }
+form.checkout.archi-funnel-step-3 .archi-funnel-back-wrap { display: block !important; }
+
+.archi-funnel-continue-wrap {
+    margin: 32px 0;
+    text-align: center;
+}
+.archi-funnel-continue {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--archi-gradient);
+    color: white;
+    border: none;
+    padding: 16px 36px;
+    border-radius: 999px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: 'Manrope', sans-serif;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 16px 32px -16px rgba(255, 61, 127, 0.5);
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1);
+    min-width: 280px;
+}
+.archi-funnel-continue:hover { transform: translateY(-2px); }
+
+.archi-funnel-back-wrap {
+    margin: 0 auto 16px;
+    text-align: center;
+    display: none;
+}
+.archi-funnel-back {
+    background: none;
+    border: none;
+    color: var(--archi-paper-400);
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    font-family: 'Manrope', sans-serif;
+}
+.archi-funnel-back:hover { color: var(--archi-paper-50); }
+
+.archi-funnel-validation-error {
+    margin: 0 0 16px;
+    padding: 12px 16px;
+    background: rgba(248, 113, 113, 0.1);
+    border: 1px solid rgba(248, 113, 113, 0.4);
+    border-radius: 12px;
+    color: #fca5a5;
+    font-size: 14px;
+    display: none;
+}
+.archi-funnel-validation-error.visible { display: block; }
+
+/* Banner crítico de comprobante */
+.archi-funnel-receipt-warning {
+    max-width: 720px;
+    margin: 24px auto;
+    padding: 16px 20px;
+    background: linear-gradient(95deg, rgba(251, 191, 36, 0.12), rgba(255, 138, 61, 0.08));
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    border-radius: 14px;
+    color: #fde68a;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.archi-funnel-receipt-warning strong { color: var(--archi-yellow); }
+
+/* Advertencia "falta un paso" en el paso Pagar - amarilla, grande y en negrita. */
+.archi-step3-warning {
+    margin: 16px 0 0;
+    padding: 16px 20px;
+    background: linear-gradient(95deg, rgba(251, 191, 36, 0.14), rgba(255, 138, 61, 0.09));
+    border: 1px solid rgba(251, 191, 36, 0.4);
+    border-radius: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-family: 'Manrope', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1.55;
+    color: #fde68a;
+}
+.archi-step3-warning strong { color: var(--archi-yellow); font-weight: 800; }
+.archi-step3-warning svg { flex-shrink: 0; margin-top: 2px; }
+.archi-step3-warning p { margin: 0; }
+
+/* ============================================================
+   THANK-YOU TEMPLATE
+   ============================================================ */
+.archi-thankyou {
+    max-width: 720px;
+    margin: 0 auto;
+}
+.archi-thankyou__hero {
+    text-align: center;
+    margin-bottom: 40px;
+}
+.archi-thankyou__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+}
+.archi-thankyou__icon--success {
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    color: var(--archi-green);
+}
+.archi-thankyou__icon--warning {
+    background: rgba(251, 191, 36, 0.12);
+    border: 1px solid rgba(251, 191, 36, 0.35);
+    color: var(--archi-yellow);
+}
+.archi-thankyou__icon--waiting {
+    background: rgba(251, 191, 36, 0.10);
+    border: 1px solid rgba(251, 191, 36, 0.25);
+    color: var(--archi-yellow);
+}
+.archi-thankyou__icon--error {
+    background: rgba(248, 113, 113, 0.12);
+    border: 1px solid rgba(248, 113, 113, 0.35);
+    color: var(--archi-red);
+}
+.archi-thankyou__title {
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 500;
+    margin: 0 0 12px;
+}
+.archi-thankyou__sub {
+    color: var(--archi-paper-200);
+    font-size: 16px;
+    max-width: 480px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+.archi-thankyou__actions { margin-top: 20px; }
+.archi-thankyou__card {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    box-shadow: var(--archi-shadow);
+    padding: 24px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+.archi-thankyou__card-icon {
+    width: 48px; height: 48px;
+    border-radius: 999px;
+    background: rgba(255, 61, 127, 0.15);
+    color: var(--archi-pink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+.archi-thankyou__card-title {
+    color: var(--archi-paper-50);
+    font-weight: 600;
+    margin: 0 0 4px;
+}
+.archi-thankyou__card-sub {
+    color: var(--archi-paper-400);
+    font-size: 14px;
+    margin: 0;
+}
+.archi-thankyou__card-sub + .archi-thankyou__card-sub {
+    margin-top: 6px;
+}
+
+.archi-thankyou__summary {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    box-shadow: var(--archi-shadow);
+    padding: 24px;
+    margin-bottom: 16px;
+}
+.archi-thankyou__summary-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.archi-thankyou__summary-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    font-size: 14px;
+}
+.archi-thankyou__summary-label { color: var(--archi-paper-400); }
+.archi-thankyou__summary-value { color: var(--archi-paper-50); text-align: right; }
+.archi-thankyou__summary-item--total {
+    border-top: 1px solid var(--archi-border);
+    margin-top: 8px;
+    padding-top: 12px;
+}
+.archi-thankyou__total {
+    font-family: 'AndralisND', serif;
+    font-size: 20px;
+    font-weight: 600;
+}
+.archi-mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+
+/* Datos del pedido (Nº, fecha, email) - línea compacta debajo de "Detalles del pedido" */
+.archi-thankyou__ordermeta {
+    text-align: center;
+    margin: 16px 0 2px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--archi-paper-400);
+}
+.archi-thankyou__ordermeta-label {
+    color: var(--archi-paper-200);
+    font-weight: 600;
+}
+
+.archi-thankyou__upload {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    padding: 36px 32px;
+    margin-bottom: 24px;
+}
+/* Más aire entre el h2 "Subí tu comprobante" y el botón "Enviar comprobante" */
+.archi-thankyou__upload h2.upload_receipt,
+.archi-thankyou__upload h2.woocommerce-order-details__title {
+    margin-bottom: 20px;
+}
+.archi-thankyou__upload table.upload_receipt,
+.archi-thankyou__upload table.woocommerce-table--upload-receipt {
+    margin: 0 auto;
+}
+.archi-thankyou__upload form#uploadreceiptfileimage,
+.archi-thankyou__upload .receipt-img-upload {
+    padding: 8px 0;
+}
+.archi-thankyou__upload button.start-upload {
+    margin-top: 16px !important;
+}
+
+.archi-thankyou__more {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    padding: 24px;
+    margin-bottom: 16px;
+}
+.archi-thankyou__more-title {
+    color: var(--archi-paper-50);
+    font-weight: 600;
+    margin: 0 0 6px;
+}
+.archi-thankyou__more-sub {
+    color: var(--archi-paper-400);
+    font-size: 14px;
+    margin: 0 0 16px;
+}
+.archi-thankyou__more-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.archi-thankyou__more-actions .archi-btn {
+    flex: 1;
+    min-width: 180px;
+}
+
+/* Cierre del paso "Listo": GIF del gatito + link a pedidos. Bloque transparente,
+   separado por una línea, para que lea como remate y no compita con las cards de arriba. */
+.archi-thankyou__closing {
+    text-align: center;
+    margin-top: 28px;
+    padding-top: 28px;
+    border-top: 1px solid var(--archi-border);
+}
+.archi-thankyou__gif {
+    display: block;
+    width: 100%;
+    max-width: 340px;
+    height: auto;
+    margin: 0 auto 18px;
+    border-radius: 16px;
+}
+.archi-thankyou__closing-text {
+    color: var(--archi-paper-200);
+    font-size: 15px;
+    margin: 0 0 14px;
+}
+.archi-thankyou__closing-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--archi-pink);
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 160ms ease;
+}
+.archi-thankyou__closing-link:hover {
+    color: var(--archi-orange);
+}
+
+/* ============================================================
+   WC CART TABLE - fix banner blanco header (Royal Addons + WC default)
+   ============================================================ */
+/* MAXIMA ESPECIFICIDAD para pisar Royal Addons (wpr-shop-table) - pisa background-image también */
+body.woocommerce-cart .woocommerce table.shop_table thead,
+body.woocommerce-cart .woocommerce table.cart thead,
+body.woocommerce-cart .woocommerce table.wpr-shop-table thead,
+html body.woocommerce-cart table.wpr-shop-table thead,
+html body.woocommerce-cart table.cart thead,
+html body.woocommerce-cart table.shop_table thead {
+    background: var(--archi-ink-600) !important;
+    background-color: var(--archi-ink-600) !important;
+    background-image: none !important;
+    background-image: linear-gradient(180deg, var(--archi-ink-600), var(--archi-ink-600)) !important;
+}
+body.woocommerce-cart .woocommerce table.shop_table thead tr,
+body.woocommerce-cart .woocommerce table.cart thead tr,
+body.woocommerce-cart .woocommerce table.wpr-shop-table thead tr,
+html body.woocommerce-cart table.wpr-shop-table thead tr,
+html body.woocommerce-cart table.cart thead tr {
+    background: var(--archi-ink-600) !important;
+    background-color: var(--archi-ink-600) !important;
+    background-image: none !important;
+}
+body.woocommerce-cart .woocommerce table.shop_table thead th,
+body.woocommerce-cart .woocommerce table.cart thead th,
+body.woocommerce-cart .woocommerce table.wpr-shop-table thead th,
+html body.woocommerce-cart table.wpr-shop-table thead th,
+html body.woocommerce-cart table.cart thead th,
+html body.woocommerce-cart table.shop_table thead th {
+    background: var(--archi-ink-600) !important;
+    background-color: var(--archi-ink-600) !important;
+    background-image: none !important;
+    color: var(--archi-paper-50) !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.08em !important;
+    padding: 14px 16px !important;
+    border: none !important;
+    border-bottom: 1px solid var(--archi-border) !important;
+    text-shadow: none !important;
+}
+/* Y el body de la tabla */
+body.woocommerce-cart .woocommerce table.shop_table tbody,
+body.woocommerce-cart .woocommerce table.cart tbody,
+body.woocommerce-cart .woocommerce table.wpr-shop-table tbody {
+    background: var(--archi-ink-700) !important;
+    background-color: var(--archi-ink-700) !important;
+}
+/* Asegurar texto blanco/paper en las celdas del producto */
+body.woocommerce-cart .woocommerce table.cart tbody td,
+body.woocommerce-cart .woocommerce table.cart tbody td a,
+body.woocommerce-cart .woocommerce table.wpr-shop-table tbody td,
+body.woocommerce-cart .woocommerce table.wpr-shop-table tbody td a {
+    color: var(--archi-paper-50) !important;
+    font-family: 'Manrope', sans-serif !important;
+}
+body.woocommerce-cart .woocommerce table.cart tbody td.product-name a {
+    color: var(--archi-paper-50) !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    text-decoration: none !important;
+}
+body.woocommerce-cart .woocommerce table.cart tbody td.product-name a:hover {
+    color: var(--archi-pink) !important;
+}
+body.woocommerce-cart .woocommerce table.cart tbody td.product-price,
+body.woocommerce-cart .woocommerce table.cart tbody td.product-subtotal {
+    color: var(--archi-paper-50) !important;
+    font-weight: 500 !important;
+    font-variant-numeric: tabular-nums !important;
+}
+
+/* Wrapper del table: card oscura */
+body.woocommerce-cart table.shop_table,
+body.woocommerce-cart table.cart,
+body.woocommerce-cart table.wpr-shop-table {
+    background: var(--archi-card-bg) !important;
+    border: 1px solid var(--archi-border) !important;
+    border-radius: 20px !important;
+    box-shadow: var(--archi-shadow) !important;
+    overflow: hidden !important;
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    width: 100% !important;
+}
+
+/* Filas de productos */
+body.woocommerce-cart table.shop_table tbody tr,
+body.woocommerce-cart table.cart tbody tr,
+body.woocommerce-cart table.wpr-shop-table tbody tr {
+    background: transparent !important;
+}
+body.woocommerce-cart table.shop_table tbody td,
+body.woocommerce-cart table.cart tbody td,
+body.woocommerce-cart table.wpr-shop-table tbody td {
+    background: transparent !important;
+    color: var(--archi-paper-200) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--archi-border) !important;
+    padding: 18px 16px !important;
+    vertical-align: middle !important;
+}
+body.woocommerce-cart table.shop_table tbody tr:last-child td {
+    border-bottom: none !important;
+}
+
+/* X de remover producto - mover a la DERECHA del row */
+body.woocommerce-cart table.cart tr.cart_item,
+body.woocommerce-cart table.cart tr.woocommerce-cart-form__cart-item {
+    position: relative !important;
+}
+body.woocommerce-cart table.cart td.product-remove,
+body.woocommerce-cart table.cart .product-remove,
+body.woocommerce-cart table.wpr-shop-table .product-remove {
+    width: 50px !important;
+    padding-right: 24px !important;
+    text-align: right !important;
+    order: 99 !important;
+}
+/* En tablas desktop, mover la columna remove al final via CSS order */
+@media (min-width: 768px) {
+    body.woocommerce-cart table.cart tr.cart_item,
+    body.woocommerce-cart table.cart tr.woocommerce-cart-form__cart-item {
+        display: grid !important;
+        grid-template-columns: 80px 1fr auto auto auto 50px !important;
+        gap: 16px !important;
+        align-items: center !important;
+        padding: 12px 16px !important;
+    }
+    body.woocommerce-cart table.cart .product-thumbnail { grid-column: 1; }
+    body.woocommerce-cart table.cart .product-name { grid-column: 2; }
+    body.woocommerce-cart table.cart .product-price { grid-column: 3; }
+    body.woocommerce-cart table.cart .product-quantity { grid-column: 4; }
+    body.woocommerce-cart table.cart .product-subtotal { grid-column: 5; min-width: 100px; }
+    body.woocommerce-cart table.cart .product-remove { grid-column: 6; padding: 0 !important; }
+
+    /* Thead también en grid para que alinee con tbody */
+    body.woocommerce-cart table.cart thead tr {
+        display: grid !important;
+        grid-template-columns: 80px 1fr auto auto auto 50px !important;
+        gap: 16px !important;
+        padding: 14px 16px !important;
+    }
+    body.woocommerce-cart table.cart thead th:nth-child(1) { grid-column: 1; }
+    body.woocommerce-cart table.cart thead th:nth-child(2) { grid-column: 2; }
+    body.woocommerce-cart table.cart thead th:nth-child(3) { grid-column: 3; }
+    body.woocommerce-cart table.cart thead th:nth-child(4) { grid-column: 4; }
+    body.woocommerce-cart table.cart thead th:nth-child(5) { grid-column: 5; min-width: 100px; }
+}
+
+/* Botón X (remove) estilizado */
+body.woocommerce-cart .product-remove a.remove,
+body.woocommerce-cart a.remove {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 999px !important;
+    background: var(--archi-ink-600) !important;
+    color: var(--archi-paper-400) !important;
+    border: 1px solid var(--archi-border) !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 18px !important;
+    text-decoration: none !important;
+    transition: background 180ms ease, color 180ms ease !important;
+}
+body.woocommerce-cart .product-remove a.remove:hover,
+body.woocommerce-cart a.remove:hover {
+    background: var(--archi-red) !important;
+    color: white !important;
+}
+
+/* Imágenes de producto en la tabla */
+body.woocommerce-cart table.cart .product-thumbnail img {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.6) !important;
+    width: 80px !important;
+    height: auto !important;
+}
+
+/* Coupon code row: separar visualmente */
+body.woocommerce-cart table.cart td.actions {
+    background: var(--archi-ink-800) !important;
+    border-top: 1px solid var(--archi-border) !important;
+    padding: 16px !important;
+}
+body.woocommerce-cart .coupon {
+    display: flex !important;
+    gap: 12px !important;
+    align-items: center !important;
+}
+body.woocommerce-cart .coupon input[type="text"] {
+    flex: 1 !important;
+    max-width: 280px !important;
+}
+
+/* ============================================================
+   WC NOTICES - banners cerrables con X
+   ============================================================ */
+body.woocommerce-cart .woocommerce-message,
+body.woocommerce-cart .woocommerce-info,
+body.woocommerce-cart .woocommerce-error,
+body.woocommerce-checkout .woocommerce-message,
+body.woocommerce-checkout .woocommerce-info,
+body.woocommerce-checkout .woocommerce-error {
+    position: relative !important;
+    padding-right: 56px !important;
+    background: var(--archi-card-bg) !important;
+    border: 1px solid var(--archi-border-strong) !important;
+    border-left: 4px solid var(--archi-green) !important;
+    border-radius: 14px !important;
+    color: var(--archi-paper-50) !important;
+    font-family: 'Manrope', sans-serif !important;
+    margin-bottom: 16px !important;
+}
+body.woocommerce-cart .woocommerce-error,
+body.woocommerce-checkout .woocommerce-error {
+    border-left-color: var(--archi-red) !important;
+}
+body.woocommerce-cart .woocommerce-info,
+body.woocommerce-checkout .woocommerce-info {
+    border-left-color: var(--archi-yellow) !important;
+}
+body.woocommerce-cart .woocommerce-message::before,
+body.woocommerce-cart .woocommerce-info::before,
+body.woocommerce-cart .woocommerce-error::before {
+    color: var(--archi-paper-200) !important;
+    top: 18px !important;
+}
+/* Botón "Seguir comprando" dentro del notice se ve como link */
+body.woocommerce-cart .woocommerce-message a.button,
+body.woocommerce-cart .woocommerce-info a.button,
+body.woocommerce-cart .woocommerce-error a.button {
+    background: transparent !important;
+    color: var(--archi-pink) !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    margin-right: 12px !important;
+}
+/* Botón X para cerrar notices (lo agrega el JS) - SIEMPRE a la derecha */
+body .archi-notice-dismiss,
+body.woocommerce-cart .woocommerce-message > .archi-notice-dismiss,
+body.woocommerce-cart .woocommerce-info > .archi-notice-dismiss,
+body.woocommerce-cart .woocommerce-error > .archi-notice-dismiss,
+body.woocommerce-checkout .woocommerce-message > .archi-notice-dismiss {
+    position: absolute !important;
+    top: 50% !important;
+    right: 14px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 999px !important;
+    background: rgba(245, 241, 234, 0.08) !important;
+    color: var(--archi-paper-50) !important;
+    border: 1px solid var(--archi-border-strong) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    transition: background 180ms ease, color 180ms ease !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 32px !important;
+    order: 999 !important;
+    z-index: 5 !important;
+}
+body .archi-notice-dismiss:hover {
+    background: rgba(245, 241, 234, 0.16) !important;
+    color: var(--archi-paper-50) !important;
+}
+
+/* Banner de "se ha añadido al carrito" / cupón - layout específico
+   La X tiene que estar al EXTREMO DERECHO del banner, no pegada al texto */
+body.woocommerce-cart .woocommerce-message,
+body.woocommerce-cart .woocommerce-info,
+body.woocommerce-cart .woocommerce-error,
+body.woocommerce-checkout .woocommerce-message,
+body.woocommerce-checkout .woocommerce-info,
+body.woocommerce-checkout .woocommerce-error,
+body.woocommerce-checkout .woocommerce-form-coupon-toggle .woocommerce-info {
+    position: relative !important;
+    padding: 16px 72px 16px 24px !important;
+    min-height: 60px !important;
+    display: block !important;
+    margin-bottom: 16px !important;
+}
+body.woocommerce-cart .woocommerce-message::before,
+body.woocommerce-cart .woocommerce-info::before,
+body.woocommerce-cart .woocommerce-error::before,
+body.woocommerce-checkout .woocommerce-message::before,
+body.woocommerce-checkout .woocommerce-info::before,
+body.woocommerce-checkout .woocommerce-error::before {
+    position: absolute !important;
+    left: 18px !important;
+    top: 18px !important;
+    margin-right: 0 !important;
+}
+
+/* Botón X siempre al EXTREMO DERECHO del banner */
+html body .archi-notice-dismiss {
+    position: absolute !important;
+    top: 50% !important;
+    right: 16px !important;
+    left: auto !important;
+    bottom: auto !important;
+    transform: translateY(-50%) !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 999px !important;
+    background: rgba(245, 241, 234, 0.08) !important;
+    color: var(--archi-paper-50) !important;
+    border: 1px solid var(--archi-border-strong) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 20px !important;
+    line-height: 1 !important;
+    transition: background 180ms ease !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 5 !important;
+}
+html body .archi-notice-dismiss:hover {
+    background: rgba(245, 241, 234, 0.16) !important;
+}
+
+/* ============================================================
+   PEPRODEV WC Receipt Uploader - selectors confirmados del DOM real
+   ============================================================ */
+
+/* Wrapper general del plugin */
+body.woocommerce-order-received .peprodev_woocommerce_receipt_uploader,
+body.woocommerce-order-received div.shortcode_wrapper {
+    background: var(--archi-card-bg);
+    border: 1px solid var(--archi-border);
+    border-radius: 20px;
+    box-shadow: var(--archi-shadow);
+    padding: 0;
+    overflow: hidden;
+    margin: 24px 0;
+}
+
+/* Header del plugin (h2 "Upload receipt") */
+body.woocommerce-order-received h2.upload_receipt,
+body.woocommerce-order-received h2.woocommerce-order-details__title.upload_receipt {
+    background: var(--archi-gradient);
+    color: white !important;
+    padding: 18px 24px;
+    margin: 0 !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 18px !important;
+    letter-spacing: 0;
+    text-transform: none;
+    border-radius: 20px 20px 0 0;
+}
+
+/* Tabla del receipt upload */
+body.woocommerce-order-received table.upload_receipt,
+body.woocommerce-order-received table.woocommerce-table--upload-receipt {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+body.woocommerce-order-received table.upload_receipt thead,
+body.woocommerce-order-received table.woocommerce-table--upload-receipt thead {
+    display: none !important;
+}
+body.woocommerce-order-received table.upload_receipt tbody td,
+body.woocommerce-order-received table.upload_receipt tbody th,
+body.woocommerce-order-received table.woocommerce-table--upload-receipt tbody td,
+body.woocommerce-order-received table.woocommerce-table--upload-receipt tbody th {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid var(--archi-border) !important;
+    color: var(--archi-paper-200) !important;
+    padding: 16px 24px !important;
+    font-family: 'Manrope', sans-serif !important;
+    vertical-align: middle !important;
+}
+body.woocommerce-order-received table.upload_receipt tbody tr:last-child td,
+body.woocommerce-order-received table.upload_receipt tbody tr:last-child th {
+    border-bottom: none !important;
+}
+
+/* Preview del comprobante */
+body.woocommerce-order-received img.receipt-preview {
+    border-radius: 12px !important;
+    box-shadow: 0 8px 16px -8px rgba(0, 0, 0, 0.6) !important;
+    max-width: 120px !important;
+    height: auto !important;
+}
+
+/* Status del comprobante */
+body.woocommerce-order-received p.receipt-status {
+    color: var(--archi-paper-400) !important;
+    font-size: 14px !important;
+    margin: 0 !important;
+    font-family: 'Manrope', sans-serif !important;
+}
+
+/* Form de upload */
+body.woocommerce-order-received form#uploadreceiptfileimage {
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* Input file estilizado */
+body.woocommerce-order-received input#receipt-file,
+body.woocommerce-order-received input[type="file"][name="upload"] {
+    background: var(--archi-ink-700) !important;
+    border: 1px dashed var(--archi-border-strong) !important;
+    border-radius: 12px !important;
+    padding: 12px 16px !important;
+    color: var(--archi-paper-200) !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-size: 14px !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    margin-right: 12px !important;
+    cursor: pointer !important;
+}
+
+/* Botón "Upload Receipt" (se traduce a "Enviar comprobante" con gettext) */
+body.woocommerce-order-received button.start-upload,
+body.woocommerce-order-received button.start-upload.button {
+    background: var(--archi-gradient) !important;
+    color: white !important;
+    border: none !important;
+    padding: 14px 28px !important;
+    border-radius: 999px !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 15px !important;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.15) inset, 0 16px 32px -16px rgba(255, 61, 127, 0.5) !important;
+    transition: transform 180ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    cursor: pointer !important;
+    text-transform: none !important;
+    letter-spacing: 0 !important;
+}
+body.woocommerce-order-received button.start-upload:hover {
+    transform: translateY(-2px) !important;
+}
+
+/* Date uploaded - oculto en estado inicial */
+body.woocommerce-order-received tr.date-uploaded.hide {
+    display: none !important;
+}
+
+/* Bank details (ARCHICOOP) - también restilar */
+body.woocommerce-order-received .woocommerce-bacs-bank-details {
+    background: var(--archi-card-bg) !important;
+    border: 1px solid var(--archi-border) !important;
+    border-radius: 20px !important;
+    padding: 24px !important;
+    margin: 24px 0 !important;
+    list-style: none !important;
+    box-shadow: var(--archi-shadow) !important;
+}
+body.woocommerce-order-received .woocommerce-bacs-bank-details h2,
+body.woocommerce-order-received .wc-bacs-bank-details-account-name {
+    color: var(--archi-paper-50) !important;
+    font-family: 'AndralisND', serif !important;
+    font-size: 20px !important;
+}
+body.woocommerce-order-received .woocommerce-bacs-bank-details strong {
+    color: var(--archi-paper-50) !important;
+}
+
+/* "Transfiere al alias: ARCHICOOP y subí tu comprobante" en thank-you - destacado como CTA */
+body.woocommerce-order-received h2.woocommerce-order-details__title.upload_receipt {
+    background: linear-gradient(135deg, rgba(244, 114, 182, 0.18), rgba(251, 146, 60, 0.18)) !important;
+    border: 1px solid rgba(244, 114, 182, 0.35) !important;
+    border-radius: 16px !important;
+    padding: 18px 24px !important;
+    margin: 24px 0 16px !important;
+    color: var(--archi-paper-50) !important;
+    font-size: 18px !important;
+    font-family: 'Manrope', sans-serif !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+    letter-spacing: 0.01em !important;
+}
+
+/* Tabla "Detalles del pedido" (paso 5 / Mi cuenta): las celdas de WC solo traen
+   border-top y border-right, así que el borde izquierdo y el superior quedan sin
+   línea. Un borde en la tabla cierra el recuadro completo y parejo (border-collapse
+   lo fusiona con los bordes de celda, sin doble línea). */
+table.woocommerce-table--order-details {
+    border: 1px solid #ddd !important;
+}
+
+/* ============================================================
+   BANK CTA - bloque bancario destacado en step 3 (Pagar)
+   ============================================================ */
+.archi-bank-cta {
+    max-width: 920px;
+    margin: 0 auto 24px;
+    background: linear-gradient(180deg, #1c1a1f, #15131a);
+    border: 1px solid rgba(244, 114, 182, 0.28);
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(244, 114, 182, 0.06);
+    color: var(--archi-paper-50);
+}
+.archi-bank-cta__alias-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: linear-gradient(135deg, rgba(244, 114, 182, 0.22), rgba(251, 146, 60, 0.22));
+    border: 1px solid rgba(244, 114, 182, 0.45);
+    border-radius: 14px;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+}
+.archi-bank-cta__alias-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.7);
+}
+.archi-bank-cta__alias-value {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: #fff;
+    flex: 1;
+    word-break: break-all;
+}
+.archi-bank-cta__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 999px;
+    color: var(--archi-paper-50);
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 180ms ease, border-color 180ms ease;
+}
+.archi-bank-cta__copy:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+.archi-bank-cta__copy.archi-bank-cta__copy--ok {
+    background: rgba(34, 197, 94, 0.18);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: #86efac;
+}
+.archi-bank-cta__copy--inline {
+    padding: 4px 10px;
+    font-size: 12px;
+    margin-left: 8px;
+}
+.archi-bank-cta__details {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 24px;
+}
+.archi-bank-cta__detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px 14px;
+    background: rgba(245, 241, 234, 0.04);
+    border: 1px solid rgba(245, 241, 234, 0.08);
+    border-radius: 10px;
+}
+.archi-bank-cta__detail--wide {
+    grid-column: 1 / -1;
+}
+.archi-bank-cta__detail-label {
+    font-family: 'Manrope', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(245, 241, 234, 0.55);
+}
+.archi-bank-cta__detail-value {
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--archi-paper-50);
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.archi-bank-cta__detail-value.archi-mono {
+    font-family: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+    letter-spacing: 0.02em;
+    word-break: break-all;
+}
+.archi-bank-cta__hint {
+    margin: 16px 0 0;
+    font-family: 'Manrope', sans-serif;
+    font-size: 13px;
+    color: rgba(245, 241, 234, 0.7);
+    text-align: center;
+    line-height: 1.5;
+}
+@media (max-width: 640px) {
+    .archi-bank-cta { padding: 18px; }
+    .archi-bank-cta__alias-value { font-size: 20px; }
+    .archi-bank-cta__details { grid-template-columns: 1fr; }
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 768px) {
+    .archi-funnel-stepper__list { gap: 4px; }
+    .archi-funnel-stepper__dot { width: 32px; height: 32px; font-size: 13px; }
+    .archi-funnel-stepper__label { display: none; }
+    .archi-funnel-stepper__mobile { display: block; }
+
+    .archi-cart-item {
+        grid-template-columns: 80px 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+    }
+    .archi-cart-item__remove { position: absolute; top: 12px; right: 12px; }
+    .archi-cart-item { position: relative; padding-top: 36px; }
+    .archi-cart-item__media { width: 80px; }
+    .archi-cart-item__title { font-size: 17px; }
+    .archi-cart-item__subtotal-value { font-size: 18px; }
+    .archi-cart-coupon__form { flex-direction: column; }
+    .archi-funnel-continue { width: 100%; min-width: 0; }
+    .archi-thankyou__more-actions { flex-direction: column; }
+    .archi-thankyou__more-actions .archi-btn { min-width: 0; width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
