@@ -2774,3 +2774,85 @@ add_action('wp_head', function () {
     </script>
     <?php
 }, 99);
+
+// =====================================================================
+// FIX UX (2026-06-06): auto-seleccionar variante cuando hay una sola
+// vendible (in_stock + purchasable). Sin esto, WC deja el dropdown con el
+// nombre como placeholder pero value vacio, el boton "Reserva" queda con
+// clase wc-variation-selection-needed (opacity 0.5) y el cliente cree que
+// ya esta elegido. Confirmado al menos en 2 funciones (5/6 y 6/6).
+// =====================================================================
+add_action('wp_footer', function () {
+    if (!function_exists('is_product')) return;
+    if (!is_product()) return;
+    ?>
+    <script id="archi-auto-select-variation">
+    (function () {
+        'use strict';
+
+        function autoSelectVariation() {
+            var form = document.querySelector('form.variations_form');
+            if (!form) return;
+
+            var raw = form.getAttribute('data-product_variations');
+            if (!raw) return;
+
+            var variations;
+            try { variations = JSON.parse(raw); }
+            catch (e) { return; }
+            if (!Array.isArray(variations) || !variations.length) return;
+
+            // Solo las variantes realmente vendibles
+            var sellable = variations.filter(function (v) {
+                return v && v.is_in_stock && v.is_purchasable;
+            });
+
+            // Si hay 0 (agotado) o 2+ (cliente elige), no tocamos
+            if (sellable.length !== 1) return;
+
+            var target = sellable[0];
+            if (!target.attributes || typeof target.attributes !== 'object') return;
+
+            var selects = form.querySelectorAll('select[name^="attribute_"]');
+            if (!selects.length) return;
+
+            var changed = false;
+            selects.forEach(function (select) {
+                if (select.value) return;
+                var val = target.attributes[select.name];
+                if (!val) return;
+                var opt = Array.prototype.find.call(select.options, function (o) {
+                    return o.value === val;
+                });
+                if (!opt) return;
+                select.value = val;
+                changed = true;
+            });
+
+            if (!changed) return;
+
+            if (window.jQuery) {
+                window.jQuery(form).find('select[name^="attribute_"]').trigger('change');
+            } else {
+                selects.forEach(function (s) {
+                    s.dispatchEvent(new Event('change', { bubbles: true }));
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', autoSelectVariation);
+        } else {
+            autoSelectVariation();
+        }
+
+        // Re-intentar en eventos de WC y al renderizarse tarde
+        if (window.jQuery) {
+            window.jQuery(document).on('wc_variation_form found_variation reset_data', function () {
+                setTimeout(autoSelectVariation, 50);
+            });
+        }
+    })();
+    </script>
+    <?php
+}, 99);
