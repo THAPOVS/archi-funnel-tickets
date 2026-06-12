@@ -1598,6 +1598,36 @@ add_action('woocommerce_before_thankyou', function ($order_id) {
 }, 5);
 
 // =====================================================================
+// 4a-bis. Forzar el override de cart/cart.php del child theme.
+// Un plugin (probablemente el multi-step de PeproDev, que ya pisaba el
+// button text del checkout) redirige el template del carrito via filtro
+// y saltea el override estándar del theme: los demás overrides del mismo
+// directorio (cart-totals, proceed-to-checkout-button) cargan bien, solo
+// cart.php quedaba pisado. Prioridad 999 para ganarle.
+// =====================================================================
+add_filter('woocommerce_locate_template', function ($template, $template_name, $template_path) {
+    if ($template_name === 'cart/cart.php') {
+        $custom = get_stylesheet_directory() . '/woocommerce/cart/cart.php';
+        if (file_exists($custom)) {
+            return $custom;
+        }
+    }
+    return $template;
+}, PHP_INT_MAX, 3);
+
+// wc_get_template tiene OTRO filtro además de locate_template; lo cubrimos también.
+add_filter('wc_get_template', function ($located, $template_name) {
+    if ($template_name === 'cart/cart.php') {
+        $custom = get_stylesheet_directory() . '/woocommerce/cart/cart.php';
+        if (file_exists($custom)) {
+            return $custom;
+        }
+    }
+    return $located;
+}, PHP_INT_MAX, 2);
+
+
+// =====================================================================
 // 4b. Carrito persistente hasta confirmación del pago (feedback Joaco 12/6)
 //
 // Comportamiento: al crear la orden el carrito NO se pierde — el cliente

@@ -21,9 +21,8 @@ do_action('woocommerce_before_cart'); ?>
 <form class="woocommerce-cart-form" action="<?php echo esc_url(wc_get_cart_url()); ?>" method="post">
     <?php do_action('woocommerce_before_cart_table'); ?>
 
-    <p class="archi-eyebrow">Paso 1 · Tu ticket</p>
-    <h1 class="archi-cart-title">Revisá lo que llevás</h1>
-    <p class="archi-cart-sub">Confirmá el evento, la cantidad y la variante. Después seguimos con tus datos.</p>
+    <?php // Heading lo renderiza el hook woocommerce_before_cart (functions.php),
+          // no duplicarlo acá. ?>
 
     <div class="archi-cart-items">
         <?php do_action('woocommerce_before_cart_contents'); ?>
@@ -37,7 +36,7 @@ do_action('woocommerce_before_cart'); ?>
                 $product_permalink = apply_filters('woocommerce_cart_item_permalink', $_product->is_visible() ? $_product->get_permalink($cart_item) : '', $cart_item, $cart_item_key);
                 ?>
                 <article class="archi-cart-item">
-                    <a class="archi-cart-item__media" href="<?php echo esc_url($product_permalink); ?>">
+                    <a class="archi-cart-item__media archi-cart-item__media--poster" href="<?php echo esc_url($product_permalink); ?>">
                         <?php
                         $thumbnail = apply_filters('woocommerce_cart_item_thumbnail', $_product->get_image(), $cart_item, $cart_item_key);
                         echo $thumbnail;
@@ -53,7 +52,20 @@ do_action('woocommerce_before_cart'); ?>
                             }
                             ?>
                         </h3>
-                        <?php echo wc_get_formatted_cart_item_data($cart_item); ?>
+                        <?php
+                        // Chips de variante (rebrand 2026): la variante elegida como chip
+                        // rosa, en lugar del dl plano de WC.
+                        if (!empty($cart_item['variation']) && is_array($cart_item['variation'])) {
+                            echo '<div class="archi-chips">';
+                            foreach ($cart_item['variation'] as $attr_value) {
+                                if ($attr_value === '') continue;
+                                echo '<span class="archi-chip archi-chip--pink">' . esc_html($attr_value) . '</span>';
+                            }
+                            echo '</div>';
+                        } else {
+                            echo wc_get_formatted_cart_item_data($cart_item);
+                        }
+                        ?>
 
                         <div class="archi-cart-item__footer">
                             <div class="archi-cart-item__qty">

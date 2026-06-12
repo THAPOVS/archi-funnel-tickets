@@ -86,6 +86,7 @@ defined('ABSPATH') || exit;
     </div>
 
     <div class="archi-totals__action wc-proceed-to-checkout">
+        <a class="archi-cart-back" href="<?php echo esc_url(home_url('/eventos/')); ?>">← Seguir comprando</a>
         <?php do_action('woocommerce_proceed_to_checkout'); ?>
     </div>
 </div>

@@ -2217,6 +2217,58 @@ table.woocommerce-table--order-details {
 }
 
 /* ============================================================
+   PASO 1 · AJUSTES AL DESIGN HANDOFF (rebrand 2026)
+   ============================================================ */
+/* Póster 3/4 (92x122) en lugar del thumb cuadrado */
+.archi-cart-item__media--poster,
+.archi-cart-item__media--poster img {
+    width: 92px !important;
+    height: 122px !important;
+    object-fit: cover;
+    border-radius: var(--archi-r-md);
+    display: block;
+}
+.archi-cart-item__media--poster {
+    flex: none;
+    overflow: hidden;
+    border: 1px solid var(--archi-line-2);
+}
+
+/* La fila .actions del template default (botón "Actualizar carrito" + cupón)
+   la inyecta un plugin via hooks: redundante con el auto-update por polling
+   y con la decisión de cupón solo en checkout (Alex 20/5). Fuera. */
+body.woocommerce-cart td.actions,
+body.woocommerce-cart .actions button[name="update_cart"],
+body.woocommerce-cart button[name="update_cart"]:not(.archi-cart-update-hidden) {
+    display: none !important;
+}
+
+/* Card de totales sin header (el design lista las filas directo) */
+body.woocommerce-cart .archi-totals__header { display: none; }
+
+/* Fila de acciones: back link + CTA como el design */
+.archi-totals__action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap-reverse;
+}
+.archi-cart-back {
+    font-family: var(--archi-font-body);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--archi-muted) !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--archi-line-2);
+}
+.archi-cart-back:hover {
+    color: var(--archi-cream) !important;
+    text-decoration-color: var(--archi-pink);
+}
+
+/* ============================================================
    PASO 4 · DROPZONE DEL COMPROBANTE (design handoff .fdrop/.ffile)
    ============================================================ */
 .archi-fdrop {
@@ -2283,6 +2335,183 @@ table.woocommerce-table--order-details {
     text-underline-offset: 3px;
 }
 .archi-ffile button:hover { color: var(--archi-cream); }
+
+/* ---- Mini-resumen "Tu pedido" dentro de la card del upload (paso 4) */
+.archi-fminipedido {
+    margin-top: 18px;
+    border-top: 1px solid var(--archi-line);
+    padding-top: 16px;
+    text-align: left;
+}
+.archi-fminipedido h4 {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--archi-muted);
+    margin: 0 0 9px;
+}
+.archi-fminipedido__row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 14px;
+    font-size: 13px;
+    color: var(--archi-cream-soft);
+    padding: 3px 0;
+}
+.archi-fminipedido__row data {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--archi-cream);
+    white-space: nowrap;
+}
+.archi-fminipedido__row--total {
+    margin-top: 6px;
+    padding-top: 9px;
+    border-top: 1px solid var(--archi-line);
+}
+
+/* ---- Volver al QR (paso 4) */
+.archi-thankyou__backqr {
+    margin: 16px 0 0;
+    text-align: center;
+}
+.archi-thankyou__backqr a {
+    font-family: var(--archi-font-body);
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--archi-muted) !important;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: var(--archi-line-2);
+}
+.archi-thankyou__backqr a:hover {
+    color: var(--archi-cream) !important;
+    text-decoration-color: var(--archi-pink);
+}
+
+/* ---- Card resumen del pedido (paso 5, design handoff) */
+.archi-thankyou__resumen {
+    max-width: 640px;
+    margin: 18px auto 0;
+    background: var(--archi-night);
+    border: 1px solid var(--archi-line);
+    border-radius: var(--archi-r-lg);
+    padding: clamp(18px, 3vw, 26px);
+    box-shadow: 0 1px 0 rgba(245,241,234,0.04) inset, 0 8px 16px -8px rgba(0,0,0,0.6);
+    text-align: left;
+}
+.archi-thankyou__resumen-item {
+    display: flex;
+    gap: 16px;
+    align-items: stretch;
+}
+.archi-thankyou__resumen-poster,
+.archi-thankyou__resumen-poster img {
+    width: 70px !important;
+    height: 94px !important;
+    object-fit: cover;
+    border-radius: var(--archi-r-md);
+    display: block;
+}
+.archi-thankyou__resumen-poster {
+    flex: none;
+    overflow: hidden;
+    border: 1px solid var(--archi-line-2);
+}
+.archi-thankyou__resumen-main h3 {
+    font-family: var(--archi-font-display) !important;
+    font-size: 19px !important;
+    color: var(--archi-cream) !important;
+    margin: 0 0 3px !important;
+}
+.archi-thankyou__resumen-main p {
+    font-size: 12.5px;
+    color: var(--archi-muted);
+    margin: 0 0 8px;
+}
+.archi-thankyou__resumen-rows {
+    margin-top: 16px;
+    border-top: 1px solid var(--archi-line);
+    padding-top: 12px;
+}
+.archi-thankyou__resumen-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 16px;
+    font-size: 14px;
+    color: var(--archi-cream-soft);
+    padding: 5px 0;
+}
+.archi-thankyou__resumen-row data {
+    font-family: var(--archi-font-mono);
+    font-weight: 500;
+    font-size: 14px;
+    color: var(--archi-cream-soft);
+    white-space: nowrap;
+}
+.archi-thankyou__resumen-row--total {
+    margin-top: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--archi-line-2);
+}
+.archi-thankyou__resumen-row--total span {
+    font-family: var(--archi-font-display);
+    font-weight: 600;
+    font-size: 17px;
+    color: var(--archi-cream);
+}
+.archi-thankyou__resumen-row--total data {
+    font-weight: 700;
+    font-size: 20px;
+    color: var(--archi-cream);
+}
+
+/* ---- Botones ghost (design handoff .fbtn--ghost) */
+.archi-btn--ghost,
+.archi-thankyou__more-actions .archi-btn {
+    background: transparent !important;
+    background-image: none !important;
+    border: 1px solid var(--archi-line-2) !important;
+    color: var(--archi-cream) !important;
+    box-shadow: none !important;
+}
+.archi-btn--ghost:hover,
+.archi-thankyou__more-actions .archi-btn:hover {
+    border-color: var(--archi-pink) !important;
+}
+
+/* ---- "Mientras tanto" como card (design handoff) */
+.archi-thankyou__more {
+    max-width: 640px;
+    margin: 22px auto 0;
+    background: var(--archi-night);
+    border: 1px solid var(--archi-line);
+    border-radius: var(--archi-r-lg);
+    padding: clamp(18px, 3vw, 26px);
+    text-align: left;
+}
+.archi-thankyou__more-title {
+    font-family: var(--archi-font-mono) !important;
+    font-weight: 700 !important;
+    font-size: 10.5px !important;
+    letter-spacing: 0.16em !important;
+    text-transform: uppercase !important;
+    color: var(--archi-muted) !important;
+    margin: 0 0 8px !important;
+}
+
+/* ---- Ocultar la tabla "Detalles del pedido" de WC en order-received: la
+   reemplaza la card resumen (paso 5) / el mini-pedido (paso 4). Solo se
+   oculta cuando el JS ya movió el form de PeproDev a su placeholder
+   (clase .archi-ready) — si el JS no corre, la tabla queda como fallback. */
+body.woocommerce-order-received .archi-thankyou .woocommerce-order-details.archi-ready {
+    display: none !important;
+}
 
 /* ============================================================
    COMPACTACIÓN DESKTOP (feedback Joaco 12/6): menos aire, que el

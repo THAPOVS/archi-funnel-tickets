@@ -67,8 +67,9 @@ if ($order) {
                 <div class="archi-thankyou__icon archi-thankyou__icon--success" aria-hidden="true">
                     <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
                 </div>
-                <p class="archi-eyebrow archi-eyebrow--green">Comprobante recibido</p>
-                <h1 class="archi-thankyou__title">Todo listo<?php echo $first_name ? ', ' . esc_html($first_name) : ''; ?> ✨</h1>
+                <p class="archi-eyebrow archi-eyebrow--green">Recibimos tu comprobante</p>
+                <h1 class="archi-thankyou__title">Gracias<?php echo $first_name ? ', ' . esc_html($first_name) : ''; ?></h1>
+                <p class="archi-thankyou__sub">Estamos verificando tu pago. Apenas lo confirmemos, te mandamos el ticket a <strong><?php echo esc_html($email); ?></strong>.</p>
             </div>
         <?php elseif ($status === 'receipt-rejected') : ?>
             <div class="archi-thankyou__hero archi-thankyou__hero--error">
@@ -94,6 +95,25 @@ if ($order) {
             ?>
             <div class="archi-thankyou__upload-wrap" id="subir-comprobante">
                 <div class="archi-thankyou__upload" data-archi-upload-target></div>
+
+                <?php // Mini-resumen del pedido (design handoff: "TU PEDIDO" dentro de la card) ?>
+                <div class="archi-fminipedido">
+                    <h4>Tu pedido</h4>
+                    <?php foreach ($order->get_items() as $item) : ?>
+                        <div class="archi-fminipedido__row">
+                            <span><?php echo esc_html($item->get_name()) . ' × ' . (int) $item->get_quantity(); ?></span>
+                        </div>
+                    <?php endforeach; ?>
+                    <div class="archi-fminipedido__row archi-fminipedido__row--total">
+                        <span>Total a transferir</span>
+                        <data><?php echo wp_kses_post($order->get_formatted_order_total()); ?></data>
+                    </div>
+                </div>
+
+                <?php // Volver al QR: con el carrito persistente, el checkout reabre en el paso 3 ?>
+                <p class="archi-thankyou__backqr">
+                    <a href="<?php echo esc_url(add_query_arg('archi_step', '3', wc_get_checkout_url())); ?>">← Volver al QR de pago</a>
+                </p>
             </div>
             <?php
         }
@@ -118,6 +138,69 @@ if ($order) {
                 <p class="archi-thankyou__card-title">Te llega el ticket por mail</p>
                 <p class="archi-thankyou__card-sub">Te mandamos los tickets a <strong><?php echo esc_html($email); ?></strong> dentro de las próximas 24/48 horas.</p>
                 <p class="archi-thankyou__card-sub">Nuestros ingenieros de sistemas ya tienen tus datos 😸</p>
+            </div>
+        </div>
+
+        <?php
+        // Card resumen del pedido (design handoff): ítem con póster + chips
+        // + tabla Pedido / Fecha del show / Total pagado.
+        $resumen_items = $order->get_items();
+        $primer_item   = reset($resumen_items);
+        $show_date_str = '';
+        if ($primer_item) {
+            $pid = $primer_item->get_product_id();
+            $foo_date = get_post_meta($pid, 'WooCommerceEventsDate', true);
+            $foo_hour = get_post_meta($pid, 'WooCommerceEventsHour', true);
+            $foo_min  = get_post_meta($pid, 'WooCommerceEventsMinutes', true);
+            if ($foo_date) {
+                $show_date_str = $foo_date;
+                if ($foo_hour !== '' && $foo_hour !== null) {
+                    $show_date_str .= ' — ' . sprintf('%02d:%02d', (int) $foo_hour, (int) ($foo_min !== '' ? $foo_min : 0)) . ' h';
+                }
+            }
+        }
+        ?>
+        <div class="archi-thankyou__resumen">
+            <?php if ($primer_item) :
+                $rp = $primer_item->get_product();
+                $variation_names = array();
+                if ($primer_item->get_variation_id()) {
+                    $vp = wc_get_product($primer_item->get_variation_id());
+                    if ($vp) { $variation_names = array_values($vp->get_attributes()); }
+                }
+                ?>
+                <div class="archi-thankyou__resumen-item">
+                    <?php if ($rp) : ?>
+                        <div class="archi-thankyou__resumen-poster"><?php echo $rp->get_image('woocommerce_thumbnail'); ?></div>
+                    <?php endif; ?>
+                    <div class="archi-thankyou__resumen-main">
+                        <h3><?php echo esc_html($primer_item->get_name()); ?></h3>
+                        <p><?php echo (int) $primer_item->get_quantity(); ?> × entrada<?php echo $show_date_str ? ' · ' . esc_html($show_date_str) : ''; ?></p>
+                        <?php if (!empty($variation_names)) : ?>
+                            <div class="archi-chips">
+                                <?php foreach ($variation_names as $vn) : if (!is_string($vn) || $vn === '') continue; ?>
+                                    <span class="archi-chip archi-chip--pink"><?php echo esc_html($vn); ?></span>
+                                <?php endforeach; ?>
+                            </div>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+            <div class="archi-thankyou__resumen-rows">
+                <div class="archi-thankyou__resumen-row">
+                    <span>Pedido</span>
+                    <data>#<?php echo esc_html($order->get_order_number()); ?></data>
+                </div>
+                <?php if ($show_date_str) : ?>
+                <div class="archi-thankyou__resumen-row">
+                    <span>Fecha del show</span>
+                    <data><?php echo esc_html($show_date_str); ?></data>
+                </div>
+                <?php endif; ?>
+                <div class="archi-thankyou__resumen-row archi-thankyou__resumen-row--total">
+                    <span>Total pagado</span>
+                    <data><?php echo wp_kses_post($order->get_formatted_order_total()); ?></data>
+                </div>
             </div>
         </div>
 
