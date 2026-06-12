@@ -282,6 +282,20 @@ body.woocommerce-checkout h1.entry-title {
     color: var(--archi-muted);
     margin-top: 12px;
 }
+/* Pasos completados clickeables (navegación hacia atrás por el funnel) */
+.archi-funnel-stepper__item.is-clickable { cursor: pointer; }
+.archi-funnel-stepper__item.is-clickable:hover .archi-funnel-stepper__label {
+    color: var(--archi-green);
+}
+.archi-funnel-stepper__item.is-clickable:hover .archi-funnel-stepper__dot.completed {
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+}
+.archi-funnel-stepper__item.is-clickable:focus-visible {
+    outline: 2px solid var(--archi-pink);
+    outline-offset: 3px;
+    border-radius: 6px;
+}
+
 /* Figmark del pliego actual (lenguaje fascículo) */
 .archi-funnel-stepper__figmark {
     margin: 14px 0 0;
@@ -2016,3 +2030,266 @@ table.woocommerce-table--order-details {
     background: currentColor;
     transform: rotate(45deg);
 }
+
+/* ============================================================
+   PASO 3 · CARD DE PAGO (design handoff .fqr)
+   Card única centrada: QR + alias + monto + datos colapsables
+   + cómo pagar. Compacta: entra en un viewport desktop.
+   ============================================================ */
+.archi-fqr {
+    max-width: 640px;
+    margin: 0 auto 24px;
+    background: var(--archi-night);
+    border: 1px solid var(--archi-line);
+    border-radius: var(--archi-r-lg);
+    padding: clamp(20px, 3vw, 30px);
+    box-shadow: 0 1px 0 rgba(245,241,234,0.04) inset, 0 8px 16px -8px rgba(0,0,0,0.6);
+    text-align: center;
+    color: var(--archi-cream-soft);
+}
+.archi-fqr__code {
+    width: min(200px, 56vw);
+    height: auto;
+    background: white;
+    border-radius: var(--archi-r-md);
+    padding: 12px;
+    box-sizing: content-box;
+    display: inline-block;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.archi-fqr__or {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--archi-muted-2);
+    margin: 18px 0 6px;
+}
+.archi-fqr__alias {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+.archi-fqr__alias strong {
+    font-family: var(--archi-font-display);
+    font-weight: 700;
+    font-size: clamp(28px, 5vw, 36px);
+    letter-spacing: 0.04em;
+    color: var(--archi-cream);
+}
+.archi-fqr__copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--archi-night-2);
+    border: 1px solid var(--archi-line-2);
+    border-radius: var(--archi-r-pill);
+    padding: 9px 16px;
+    cursor: pointer;
+    font-family: var(--archi-font-body);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--archi-cream);
+    transition: border-color var(--archi-t-fast), color var(--archi-t-fast);
+}
+.archi-fqr__copy:hover { border-color: var(--archi-pink); }
+.archi-fqr__copy.is-copied { border-color: var(--archi-green); color: var(--archi-green); }
+.archi-fqr__copy--sm { padding: 4px 10px; font-size: 11px; margin-left: 6px; }
+.archi-fqr__amount {
+    margin: 12px 0 0;
+    font-size: 14px;
+    color: var(--archi-muted);
+}
+.archi-fqr__amount data {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--archi-cream);
+}
+.archi-fqr__bank {
+    margin-top: 14px;
+    text-align: center;
+}
+.archi-fqr__bank summary {
+    cursor: pointer;
+    list-style: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--archi-font-body);
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--archi-orange);
+}
+.archi-fqr__bank summary::-webkit-details-marker { display: none; }
+.archi-fqr__bank summary:hover { color: var(--archi-pink); }
+.archi-fqr__bank-grid {
+    margin-top: 12px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 18px;
+    text-align: left;
+}
+.archi-fqr__bank-grid > div {
+    background: rgba(245, 241, 234, 0.04);
+    border: 1px solid var(--archi-line);
+    border-radius: var(--archi-r-sm);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+.archi-fqr__bank-grid small {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--archi-muted-2);
+}
+.archi-fqr__bank-grid span {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--archi-cream);
+    word-break: break-all;
+}
+.archi-fqr__bank-grid span.archi-mono {
+    font-family: var(--archi-font-mono);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+}
+.archi-fqr__how {
+    margin-top: 18px;
+    border-top: 1px solid var(--archi-line);
+    padding-top: 16px;
+    text-align: left;
+}
+.archi-fqr__how h4 {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--archi-muted);
+    margin: 0 0 12px;
+}
+.archi-fqr__how ol {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: archihow;
+    display: grid;
+    gap: 9px;
+}
+.archi-fqr__how li {
+    counter-increment: archihow;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    font-size: 13.5px;
+    line-height: 1.5;
+    color: var(--archi-cream-soft);
+}
+.archi-fqr__how li::before {
+    content: counter(archihow) ".";
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--archi-pink);
+    flex: none;
+}
+.archi-fqr__how code {
+    font-family: var(--archi-font-mono);
+    font-size: 12px;
+    color: var(--archi-orange);
+}
+@media (max-width: 640px) {
+    .archi-fqr__bank-grid { grid-template-columns: 1fr; }
+}
+
+/* ---- Warning del paso 3 alineado al ancho de la card de pago */
+.archi-step3-warning.archi-bank-cta--step-3 {
+    max-width: 640px;
+    margin: 0 auto 18px;
+}
+
+/* ============================================================
+   PASO 4 · DROPZONE DEL COMPROBANTE (design handoff .fdrop/.ffile)
+   ============================================================ */
+.archi-fdrop {
+    border: 1.5px dashed var(--archi-line-2);
+    border-radius: var(--archi-r-md);
+    padding: 40px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color var(--archi-t-fast), background var(--archi-t-fast);
+}
+.archi-fdrop:hover {
+    border-color: var(--archi-pink);
+    background: rgba(255, 61, 127, 0.04);
+}
+.archi-fdrop.is-dragging {
+    border-color: var(--archi-pink);
+    background: rgba(255, 61, 127, 0.07);
+}
+.archi-fdrop__icon { color: var(--archi-muted); margin-bottom: 12px; }
+.archi-fdrop p {
+    margin: 0 0 4px;
+    font-size: 14.5px;
+    color: var(--archi-cream);
+    font-weight: 600;
+}
+.archi-fdrop small { font-size: 12px; color: var(--archi-muted-2); }
+
+.archi-ffile {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--archi-green-deep);
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    border-radius: var(--archi-r-md);
+    padding: 14px 18px;
+    color: var(--archi-green);
+    text-align: left;
+}
+.archi-ffile svg { flex: none; }
+.archi-ffile__name { flex: 1; min-width: 0; }
+.archi-ffile__name b {
+    display: block;
+    font-size: 13.5px;
+    color: var(--archi-cream);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.archi-ffile__name small {
+    font-size: 11px;
+    color: var(--archi-muted);
+    font-family: var(--archi-font-mono);
+}
+.archi-ffile button {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    font-family: var(--archi-font-body);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--archi-muted);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+.archi-ffile button:hover { color: var(--archi-cream); }
+
+/* ============================================================
+   COMPACTACIÓN DESKTOP (feedback Joaco 12/6): menos aire, que el
+   CTA quede visible sin scrollear en el paso 3
+   ============================================================ */
+body.woocommerce-checkout .archi-page-heading { margin-bottom: 20px; }
+body.woocommerce-checkout .archi-page-title { font-size: clamp(28px, 4vw, 38px) !important; }
+body.woocommerce-checkout .archi-funnel-stepper { margin-bottom: 24px; }
+body.woocommerce-cart .archi-page-heading { margin-bottom: 20px; }
+body.woocommerce-cart .archi-funnel-stepper { margin-bottom: 24px; }

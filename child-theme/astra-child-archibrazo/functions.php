@@ -1407,9 +1407,11 @@ add_action('wp_head', function () {
 // 3. Helper: render del stepper visual
 // =====================================================================
 if (!function_exists('archi_funnel_render_stepper')) {
-    function archi_funnel_render_stepper($current_step = 1) {
+    function archi_funnel_render_stepper($current_step = 1, $clickable = true) {
         // Look "pliegos del fascículo" (rebrand 2026): numeración romana,
         // labels mono uppercase, figmark del pliego actual.
+        // $clickable: los pasos completados navegan hacia atrás (cart/checkout).
+        // Se desactiva en el paso 5 (pago confirmado, el ciclo cerró).
         $labels = array(
             1 => 'Ticket',
             2 => 'Datos',
@@ -1428,14 +1430,21 @@ if (!function_exists('archi_funnel_render_stepper')) {
         $current_step = max(1, min(5, (int) $current_step));
         $current_label = $labels[$current_step];
 
-        echo '<nav class="archi-funnel-stepper" aria-label="Paso ' . (int) $current_step . ' de 5">';
+        $cart_url     = function_exists('wc_get_cart_url') ? wc_get_cart_url() : '';
+        $checkout_url = function_exists('wc_get_checkout_url') ? wc_get_checkout_url() : '';
+
+        echo '<nav class="archi-funnel-stepper" aria-label="Paso ' . (int) $current_step . ' de 5"'
+            . ' data-url-cart="' . esc_url($cart_url) . '"'
+            . ' data-url-checkout="' . esc_url($checkout_url) . '">';
         echo '<ol class="archi-funnel-stepper__list">';
         for ($n = 1; $n <= 5; $n++) {
             $state = ($n < $current_step) ? 'completed' : (($n === $current_step) ? 'current' : 'pending');
             $line_class = 'archi-funnel-stepper__line' . ($n < $current_step ? ' completed' : '');
             $label = $labels[$n];
+            $is_clickable = $clickable && $state === 'completed';
 
-            echo '<li class="archi-funnel-stepper__item">';
+            echo '<li class="archi-funnel-stepper__item' . ($is_clickable ? ' is-clickable' : '') . '" data-step="' . (int) $n . '"'
+                . ($is_clickable ? ' role="button" tabindex="0" title="Volver a ' . esc_attr($label) . '"' : '') . '>';
             echo '<span class="archi-funnel-stepper__dot ' . esc_attr($state) . '"' . ($state === 'current' ? ' aria-current="step"' : '') . '>';
             if ($state === 'completed') {
                 echo '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
@@ -1455,6 +1464,59 @@ if (!function_exists('archi_funnel_render_stepper')) {
         echo '</nav>';
     }
 }
+
+// =====================================================================
+// 3b. Stepper clickeable: navegación hacia atrás por el funnel.
+//     En checkout, los pasos 2<->3 los maneja el JS multistep; el paso 1
+//     navega a /carrito/. En order-received (paso 4), 1-3 navegan.
+// =====================================================================
+add_action('wp_footer', function () {
+    if (!archi_funnel_should_apply()) return;
+    if (!function_exists('is_woocommerce')) return;
+    if (!(is_cart() || is_checkout())) return;
+    ?>
+    <script id="archi-funnel-stepper-nav">
+    (function () {
+        'use strict';
+        document.addEventListener('click', function (e) {
+            var item = e.target.closest('.archi-funnel-stepper__item.is-clickable');
+            if (!item) return;
+            var nav = item.closest('.archi-funnel-stepper');
+            if (!nav) return;
+            var step = parseInt(item.getAttribute('data-step'), 10);
+            var cartUrl = nav.getAttribute('data-url-cart');
+            var checkoutUrl = nav.getAttribute('data-url-checkout');
+            var isCheckoutPage = document.body.classList.contains('woocommerce-checkout')
+                && !document.body.classList.contains('woocommerce-order-received');
+
+            if (step === 1 && cartUrl) { window.location.href = cartUrl; return; }
+            if (isCheckoutPage) {
+                // pasos 2/3 dentro del checkout los maneja el multistep
+                // (goToStep2 está expuesto via evento custom)
+                if (step === 2) {
+                    document.dispatchEvent(new CustomEvent('archi:goto-step', { detail: { step: 2 } }));
+                }
+                return;
+            }
+            // En order-received: 2 y 3 navegan al checkout (con el carrito restaurado)
+            if (!checkoutUrl) return;
+            if (step === 2) { window.location.href = checkoutUrl; return; }
+            if (step === 3) {
+                window.location.href = checkoutUrl + (checkoutUrl.indexOf('?') === -1 ? '?' : '&') + 'archi_step=3';
+            }
+        });
+        // Accesibilidad: Enter/Espacio sobre los items role=button
+        document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Enter' && e.key !== ' ') return;
+            var item = e.target.closest && e.target.closest('.archi-funnel-stepper__item.is-clickable');
+            if (!item) return;
+            e.preventDefault();
+            item.click();
+        });
+    })();
+    </script>
+    <?php
+}, 98);
 
 // =====================================================================
 // 4. Hooks de display del stepper en cada página del flujo
@@ -1480,50 +1542,43 @@ add_action('woocommerce_before_checkout_form', function () {
     echo '</div>';
     // Heading STEP 3 (Pagar) - oculto por default, visible en step 3
     echo '<div class="archi-page-heading archi-page-heading--step-3" style="display:none">';
-    echo '<p class="archi-eyebrow">Paso 3 · Pagá</p>';
-    echo '<h1 class="archi-page-title">Transferí y subí tu comprobante</h1>';
-    echo '<p class="archi-page-sub">Hacé la transferencia con los datos de abajo. Después te llevamos a subir el comprobante para que generemos el ticket.</p>';
+    echo '<p class="archi-eyebrow">Pago por transferencia</p>';
+    echo '<h1 class="archi-page-title">Escaneá el QR desde tu app</h1>';
+    echo '<p class="archi-page-sub">Pagás desde tu banco o billetera y nos mandás el comprobante en el próximo paso.</p>';
     echo '</div>';
-    // Bloque bancario destacado (CTA-like) - visible SOLO en step 3
-    echo '<div class="archi-bank-cta archi-bank-cta--step-3" style="display:none" aria-label="Datos para transferir">';
-    echo '  <div class="archi-bank-cta__alias-row">';
-    echo '    <span class="archi-bank-cta__alias-label">Alias</span>';
-    echo '    <span class="archi-bank-cta__alias-value archi-mono" id="archi-bank-alias">ARCHICOOP</span>';
-    echo '    <button type="button" class="archi-bank-cta__copy" data-copy-target="archi-bank-alias" aria-label="Copiar alias">';
-    echo '      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2.5" ry="2.5" stroke-linejoin="round"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg>';
-    echo '      <span>Copiar</span>';
-    echo '    </button>';
+    // Banner crítico ANTES de la card (como el design handoff)
+    echo '<div class="archi-step3-warning archi-bank-cta--step-3" style="display:none" role="alert">';
+    echo '  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3 2.5 20h19L12 3Z"/><path stroke-linecap="round" d="M12 10v4.5"/><circle cx="12" cy="17.2" r="0.6" fill="currentColor"/></svg>';
+    echo '  <p><strong>Pagar sin subir el comprobante NO genera el ticket.</strong> Te lleva 30 segundos más, pero sin ese paso no podés entrar al evento.</p>';
+    echo '</div>';
+    // Card de pago centrada (design handoff: QR + alias + monto + cómo pagar) - visible SOLO en step 3
+    echo '<div class="archi-fqr archi-bank-cta--step-3" style="display:none" aria-label="Datos para transferir">';
+    echo '  <img class="archi-fqr__code" src="https://www.archibrazo.org/wp-content/uploads/2026/05/QR-ARCHICOOP.png" alt="Código QR para transferir a Archicoop" width="200" height="200" loading="lazy" decoding="async">';
+    echo '  <p class="archi-fqr__or">O transferí al alias</p>';
+    echo '  <div class="archi-fqr__alias">';
+    echo '    <strong id="archi-bank-alias">ARCHICOOP</strong>';
+    echo '    <button type="button" class="archi-fqr__copy" data-copy-target="archi-bank-alias" aria-label="Copiar alias">Copiar</button>';
     echo '  </div>';
-    // Monto total a transferir, destacado arriba (feedback Alex: que se vea en un solo vistazo)
     if (WC()->cart) {
-        echo '  <div class="archi-bank-cta__amount">';
-        echo '    <span class="archi-bank-cta__amount-label">Monto a transferir</span>';
-        echo '    <span class="archi-bank-cta__amount-value">' . WC()->cart->get_total() . '</span>';
-        echo '  </div>';
+        echo '  <p class="archi-fqr__amount">Monto exacto: <data>' . WC()->cart->get_total() . '</data></p>';
     }
-    echo '  <div class="archi-bank-cta__main">';
-    echo '    <div class="archi-bank-cta__details">';
-    echo '      <div class="archi-bank-cta__detail"><span class="archi-bank-cta__detail-label">Banco</span><span class="archi-bank-cta__detail-value">Credicoop</span></div>';
-    echo '      <div class="archi-bank-cta__detail"><span class="archi-bank-cta__detail-label">Nº de cuenta</span><span class="archi-bank-cta__detail-value archi-mono">191-014-030007/3</span></div>';
-    echo '      <div class="archi-bank-cta__detail"><span class="archi-bank-cta__detail-label">Titular</span><span class="archi-bank-cta__detail-value">Cooperativa Archicoop Ltda.</span></div>';
-    echo '      <div class="archi-bank-cta__detail archi-bank-cta__detail--with-copy">';
-    echo '        <span class="archi-bank-cta__detail-label">CBU</span>';
-    echo '        <div class="archi-bank-cta__detail-row">';
-    echo '          <span class="archi-bank-cta__detail-value archi-mono" id="archi-bank-cbu">1910014855001403000732</span>';
-    echo '          <button type="button" class="archi-bank-cta__copy archi-bank-cta__copy--icon" data-copy-target="archi-bank-cbu" aria-label="Copiar CBU" title="Copiar CBU">';
-    echo '            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="12" height="12" rx="2.5" ry="2.5" stroke-linejoin="round"/><path stroke-linecap="round" stroke-linejoin="round" d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/></svg>';
-    echo '          </button>';
-    echo '        </div>';
-    echo '      </div>';
+    echo '  <details class="archi-fqr__bank">';
+    echo '    <summary>Ver datos bancarios completos</summary>';
+    echo '    <div class="archi-fqr__bank-grid">';
+    echo '      <div><small>Banco</small><span>Credicoop</span></div>';
+    echo '      <div><small>Nº de cuenta</small><span class="archi-mono">191-014-030007/3</span></div>';
+    echo '      <div><small>Titular</small><span>Cooperativa Archicoop Ltda.</span></div>';
+    echo '      <div><small>CBU</small><span class="archi-mono" id="archi-bank-cbu">1910014855001403000732</span> <button type="button" class="archi-fqr__copy archi-fqr__copy--sm" data-copy-target="archi-bank-cbu" aria-label="Copiar CBU">Copiar</button></div>';
     echo '    </div>';
-    echo '    <div class="archi-bank-cta__qr">';
-    echo '      <img src="https://www.archibrazo.org/wp-content/uploads/2026/05/QR-ARCHICOOP.png" alt="Código QR para transferir a Archicoop" width="220" height="220" loading="lazy" decoding="async">';
-    echo '      <span class="archi-bank-cta__qr-cap">Escaneá el QR</span>';
-    echo '    </div>';
-    echo '  </div>';
-    echo '  <div class="archi-step3-warning" role="alert">';
-    echo '    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>';
-    echo '    <p><strong>Falta un paso.</strong> Para generar tu ticket necesitamos que nos envíes el comprobante en la siguiente pantalla.</p>';
+    echo '  </details>';
+    echo '  <div class="archi-fqr__how">';
+    echo '    <h4>Cómo pagar</h4>';
+    echo '    <ol>';
+    echo '      <li>Abrí la app de tu banco o billetera (Mercado Pago, Brubank, Galicia, etc).</li>';
+    echo '      <li>Buscá la opción de pagar con QR o transferir al alias <code>ARCHICOOP</code>.</li>';
+    echo '      <li>Pagá el monto exacto y sacale screenshot al comprobante.</li>';
+    echo '      <li>Tocá "Ya pagué" y subí el comprobante en el siguiente paso.</li>';
+    echo '    </ol>';
     echo '  </div>';
     echo '</div>';
 }, 5);
@@ -1538,8 +1593,118 @@ add_action('woocommerce_before_thankyou', function ($order_id) {
     $order = wc_get_order($order_id);
     $status = $order ? $order->get_status() : '';
     $step = ($status === 'completed' || $status === 'receipt-approval') ? 5 : 4;
-    archi_funnel_render_stepper($step);
+    // En paso 5 el ciclo cerró (pago confirmado, carrito vaciado): sin volver atrás.
+    archi_funnel_render_stepper($step, $step !== 5);
 }, 5);
+
+// =====================================================================
+// 4b. Carrito persistente hasta confirmación del pago (feedback Joaco 12/6)
+//
+// Comportamiento: al crear la orden el carrito NO se pierde — el cliente
+// puede navegar libremente por el funnel (volver al QR, al carrito, etc.)
+// mientras la orden esté esperando el comprobante (receipt-upload).
+// El carrito se vacía recién cuando el comprobante se sube (receipt-approval).
+//
+// Anti-duplicados: si el cliente re-submitea el checkout con el mismo
+// carrito, se REUTILIZA la orden pendiente en lugar de crear una nueva
+// (filtro woocommerce_create_order). Si el carrito cambió (total distinto),
+// se crea orden nueva con normalidad.
+// =====================================================================
+
+// (1) Al crear la orden: recordarla en la sesión WC
+add_action('woocommerce_checkout_order_processed', function ($order_id) {
+    if (!archi_funnel_should_apply()) return;
+    if (WC()->session) {
+        WC()->session->set('archi_pending_order_id', (int) $order_id);
+    }
+}, 10, 1);
+
+// (2) Reuso de orden pendiente: mismo carrito → misma orden (sin duplicar)
+add_filter('woocommerce_create_order', function ($order_id, $checkout) {
+    if (!archi_funnel_should_apply()) return $order_id;
+    if ($order_id) return $order_id; // otro plugin ya decidió
+    if (!WC()->session || !WC()->cart) return $order_id;
+
+    $pending_id = (int) WC()->session->get('archi_pending_order_id');
+    if (!$pending_id) return $order_id;
+
+    $order = wc_get_order($pending_id);
+    if (!$order || $order->get_status() !== 'receipt-upload') {
+        WC()->session->set('archi_pending_order_id', null);
+        return $order_id;
+    }
+
+    // Mismo contenido: comparamos el total (con tolerancia de centavos).
+    $cart_total  = (float) WC()->cart->get_total('edit');
+    $order_total = (float) $order->get_total();
+    if (abs($cart_total - $order_total) > 0.01) {
+        return $order_id; // carrito cambió → orden nueva
+    }
+
+    $order->add_order_note('Archi funnel: el cliente volvió a pasar por el checkout, se reutilizó esta orden (sin duplicar).');
+    return $pending_id;
+}, 10, 2);
+
+// (3) En order-received: restaurar el carrito si la orden sigue pendiente,
+//     o vaciarlo definitivamente si el comprobante ya se subió.
+//     PRIORIDAD 30: WC core engancha wc_clear_cart_after_payment() a
+//     template_redirect prio 20 y vacía el carrito en CADA visita a
+//     order-received. Tenemos que repoblar DESPUÉS de eso, no antes.
+add_action('template_redirect', function () {
+    if (!archi_funnel_should_apply()) return;
+    if (!function_exists('is_wc_endpoint_url') || !is_wc_endpoint_url('order-received')) return;
+    if (!WC()->cart || !WC()->session) return;
+
+    $order_id = absint(get_query_var('order-received'));
+    if (!$order_id) return;
+    $order = wc_get_order($order_id);
+    if (!$order) return;
+
+    // Validar la key de la URL (misma validación que usa WC para mostrar la página)
+    $key = isset($_GET['key']) ? wc_clean(wp_unslash($_GET['key'])) : '';
+    if (!$key || !hash_equals($order->get_order_key(), $key)) return;
+
+    $status = $order->get_status();
+
+    if (in_array($status, array('receipt-approval', 'completed'), true)) {
+        // Comprobante subido / pago confirmado → cerrar el ciclo
+        if (!WC()->cart->is_empty()) {
+            WC()->cart->empty_cart();
+        }
+        WC()->session->set('archi_pending_order_id', null);
+        return;
+    }
+
+    if ($status !== 'receipt-upload') return;
+
+    // Orden pendiente de comprobante → mantener el carrito vivo para que el
+    // cliente pueda ir y volver por el funnel sin perder nada.
+    WC()->session->set('archi_pending_order_id', $order_id);
+    if (WC()->cart->is_empty()) {
+        foreach ($order->get_items() as $item) {
+            $product_id   = $item->get_product_id();
+            $variation_id = $item->get_variation_id();
+            $qty          = $item->get_quantity();
+            $attrs        = array();
+            if ($variation_id) {
+                $vp = wc_get_product($variation_id);
+                if ($vp && is_callable(array($vp, 'get_variation_attributes'))) {
+                    $attrs = $vp->get_variation_attributes();
+                }
+            }
+            try {
+                WC()->cart->add_to_cart($product_id, $qty, $variation_id, $attrs);
+            } catch (Exception $e) {
+                // Producto sin stock o eliminado: seguimos, el upload del
+                // comprobante no depende del carrito.
+            }
+        }
+        // Limpiar notices de "agregado al carrito" que genera add_to_cart
+        if (function_exists('wc_clear_notices')) {
+            wc_clear_notices();
+        }
+    }
+}, 30);
 
 // =====================================================================
 // 5. Banner crítico en /order-pay/
@@ -1692,47 +1857,87 @@ add_action('wp_footer', function () {
             return true;
         }
         function customizeFileInput() {
-            // El input nativo dice "Choose file" / "No file chosen" según el browser locale.
-            // Lo escondemos visualmente (sin display:none — eso lo rompe en algunos browsers)
-            // y ponemos un <label for="receipt-file"> que actúa como botón. El label nativamente
-            // dispara el file picker al ser clickeado, sin necesitar JS para input.click().
+            // Dropzone del rebrand 2026 (design handoff): área dashed con drag&drop
+            // + card verde cuando hay archivo. El input real de PeproDev queda oculto
+            // y recibe los files (click o drop), así su validación/submit no cambia.
             var input = document.querySelector('.archi-thankyou__upload input[type="file"]#receipt-file');
             if (!input) return;
             if (input.dataset.archiWrapped === '1') return;
             input.dataset.archiWrapped = '1';
-            // Asegurar que tiene id (para asociar el label)
             if (!input.id) input.id = 'receipt-file';
-            // Ocultar visualmente (no display:none — eso puede bloquear el click en algunos browsers)
             input.classList.add('archi-file-control__input-hidden');
-            // Construir wrapper: <label> [Elegir archivo] <span> [Nombre del archivo]
+
             var wrap = document.createElement('div');
             wrap.className = 'archi-file-control';
-            var label = document.createElement('label');
-            label.className = 'archi-file-control__btn';
-            label.setAttribute('for', input.id);
-            label.textContent = 'Elegir archivo';
-            var nameEl = document.createElement('span');
-            nameEl.className = 'archi-file-control__name';
-            nameEl.textContent = 'Ningún archivo elegido';
-            // Insertar wrap antes del input y mover input dentro al final
+
+            // --- Dropzone (estado sin archivo) ---
+            var drop = document.createElement('div');
+            drop.className = 'archi-fdrop';
+            drop.setAttribute('role', 'button');
+            drop.setAttribute('tabindex', '0');
+            drop.innerHTML =
+                '<div class="archi-fdrop__icon">' +
+                '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></div>' +
+                '<p>Arrastrá tu archivo o tocá para elegir</p>' +
+                '<small>Aceptamos PDF, JPG o PNG. Hasta 8 MB.</small>';
+
+            // --- Card de archivo elegido (estado con archivo) ---
+            var fileCard = document.createElement('div');
+            fileCard.className = 'archi-ffile';
+            fileCard.hidden = true;
+            fileCard.innerHTML =
+                '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' +
+                '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z"/><path d="M14 2v6h6"/><path d="m9 15 2 2 4-4"/></svg>' +
+                '<div class="archi-ffile__name"><b></b><small></small></div>' +
+                '<button type="button">Cambiar archivo</button>';
+
             input.parentNode.insertBefore(wrap, input);
-            wrap.appendChild(label);
-            wrap.appendChild(nameEl);
+            wrap.appendChild(drop);
+            wrap.appendChild(fileCard);
             wrap.appendChild(input);
-            input.addEventListener('change', function () {
+
+            function fmtSize(bytes) {
+                var kb = Math.round(bytes / 1024);
+                return kb < 1024 ? kb + ' KB' : (kb / 1024).toFixed(1) + ' MB';
+            }
+            function sync() {
                 var card = document.querySelector('.archi-thankyou__upload');
-                if (input.files && input.files.length > 0) {
-                    nameEl.textContent = input.files[0].name;
-                    nameEl.classList.add('archi-file-control__name--selected');
+                var has = input.files && input.files.length > 0;
+                drop.hidden = has;
+                fileCard.hidden = !has;
+                if (has) {
+                    fileCard.querySelector('b').textContent = input.files[0].name;
+                    fileCard.querySelector('small').textContent = fmtSize(input.files[0].size);
                     if (card) card.classList.add('archi-upload-has-file');
-                    label.textContent = 'Cambiar archivo';
                 } else {
-                    nameEl.textContent = 'Ningún archivo elegido';
-                    nameEl.classList.remove('archi-file-control__name--selected');
                     if (card) card.classList.remove('archi-upload-has-file');
-                    label.textContent = 'Elegir archivo';
+                }
+            }
+
+            drop.addEventListener('click', function () { input.click(); });
+            drop.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); input.click(); }
+            });
+            drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('is-dragging'); });
+            drop.addEventListener('dragleave', function () { drop.classList.remove('is-dragging'); });
+            drop.addEventListener('drop', function (e) {
+                e.preventDefault();
+                drop.classList.remove('is-dragging');
+                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length) {
+                    try {
+                        input.files = e.dataTransfer.files;
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    } catch (err) { /* browsers viejos sin asignación de FileList */ }
                 }
             });
+            fileCard.querySelector('button').addEventListener('click', function () {
+                input.value = '';
+                input.dispatchEvent(new Event('change', { bubbles: true }));
+                input.click();
+            });
+            input.addEventListener('change', sync);
+            sync();
         }
         function run() {
             if (!moveForm()) {
@@ -1992,10 +2197,12 @@ add_action('wp_footer', function () {
         function toggleStepHeading(step) {
             var h2 = $('.archi-page-heading--step-2');
             var h3 = $('.archi-page-heading--step-3');
-            var bank = $('.archi-bank-cta--step-3');
             if (h2) h2.style.display = (step === 2) ? '' : 'none';
             if (h3) h3.style.display = (step === 3) ? '' : 'none';
-            if (bank) bank.style.display = (step === 3) ? '' : 'none';
+            // Puede haber varios bloques step-3 (warning + card de pago)
+            $$('.archi-bank-cta--step-3').forEach(function (el) {
+                el.style.display = (step === 3) ? '' : 'none';
+            });
         }
 
         function goToStep3() {
@@ -2098,7 +2305,7 @@ add_action('wp_footer', function () {
         // checkout. WC re-renderea el order review (y el total) por AJAX cuando
         // se aplica o saca un cupón; el bank CTA es estático, así que lo copiamos.
         function syncBankAmount() {
-            var dest = document.querySelector('.archi-bank-cta__amount-value');
+            var dest = document.querySelector('.archi-bank-cta__amount-value, .archi-fqr__amount data');
             if (!dest) return;
             var src = document.querySelector('.woocommerce-checkout-review-order-table .order-total .woocommerce-Price-amount')
                    || document.querySelector('.order-total .woocommerce-Price-amount');
@@ -2131,9 +2338,9 @@ add_action('wp_footer', function () {
             }, 400);
         };
 
-        // Copy-to-clipboard para datos bancarios + pill ARCHICOOP
+        // Copy-to-clipboard para datos bancarios + pill ARCHICOOP + botones fqr (rebrand)
         document.addEventListener('click', function (e) {
-            var btn = e.target.closest('.archi-bank-cta__copy, .archi-alias-pill');
+            var btn = e.target.closest('.archi-bank-cta__copy, .archi-alias-pill, .archi-fqr__copy');
             if (!btn) return;
             e.preventDefault();
             // 2 modos: data-copy-target (id de elemento) o data-copy-value (literal)
@@ -2148,6 +2355,7 @@ add_action('wp_footer', function () {
             }
             if (!value) return;
             var isPill = btn.classList.contains('archi-alias-pill');
+            var isFqr = btn.classList.contains('archi-fqr__copy');
             var done = function () {
                 if (isPill) {
                     var orig = btn.textContent;
@@ -2157,6 +2365,16 @@ add_action('wp_footer', function () {
                         btn.textContent = orig || 'ARCHICOOP';
                         btn.classList.remove('archi-alias-pill--ok');
                     }, 1400);
+                    return;
+                }
+                if (isFqr) {
+                    var origFqr = btn.textContent;
+                    btn.classList.add('is-copied');
+                    btn.textContent = '✓ Copiado';
+                    setTimeout(function () {
+                        btn.textContent = origFqr || 'Copiar';
+                        btn.classList.remove('is-copied');
+                    }, 1800);
                     return;
                 }
                 var label = btn.querySelector('span');
@@ -2236,6 +2454,31 @@ add_action('wp_footer', function () {
             window.jQuery(document.body).on('updated_checkout', function () {
                 setTimeout(init, 50);
             });
+        }
+
+        // Stepper clickeable: el handler global (archi-funnel-stepper-nav)
+        // dispara este evento para volver al paso 2 sin recargar.
+        document.addEventListener('archi:goto-step', function (e) {
+            if (e.detail && e.detail.step === 2) goToStep2();
+        });
+
+        // Entrada directa al paso 3 (?archi_step=3): viene del stepper del
+        // order-received cuando el cliente vuelve a ver el QR de pago.
+        if (/[?&]archi_step=3\b/.test(window.location.search)) {
+            var tryStep3 = function (attempts) {
+                var form = getForm();
+                if (form && getBillingSection()) {
+                    // Sin validación: los datos ya estaban completos cuando creó la orden
+                    form.classList.remove('archi-funnel-step-2');
+                    form.classList.add('archi-funnel-step-3');
+                    updateStepper(3);
+                    toggleStepHeading(3);
+                    if (window.jQuery) window.jQuery(document.body).trigger('update_checkout');
+                } else if (attempts > 0) {
+                    setTimeout(function () { tryStep3(attempts - 1); }, 200);
+                }
+            };
+            tryStep3(15);
         }
     })();
     </script>
