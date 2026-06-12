@@ -33,11 +33,26 @@ defined('ABSPATH') || exit;
 
                 <?php foreach (WC()->cart->get_fees() as $fee) : ?>
                     <tr class="archi-totals__row archi-totals__row--fee fee">
-                        <th><?php echo esc_html($fee->name); ?></th>
+                        <th>
+                            <span class="archi-tipwrap"><?php echo esc_html($fee->name); ?>
+                                <span class="archi-tip" tabindex="0">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>
+                                    <span class="archi-tip__bubble">10% que sostiene el sistema de tickets, la barra y la cooperativa.</span>
+                                </span>
+                            </span>
+                        </th>
                         <td><?php wc_cart_totals_fee_html($fee); ?></td>
                     </tr>
                 <?php endforeach; ?>
 
+                <?php
+                // Tooltip del cargo del servicio (rebrand 2026): el "Coste del Servicio"
+                // es una tax rate de WC, se renderiza en este bloque.
+                $archi_tip_servicio = '<span class="archi-tip" tabindex="0">'
+                    . '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg>'
+                    . '<span class="archi-tip__bubble">10% que sostiene el sistema de tickets, la barra y la cooperativa.</span>'
+                    . '</span>';
+                ?>
                 <?php if (wc_tax_enabled() && !WC()->cart->display_prices_including_tax()) :
                     $taxable_address = WC()->customer->get_taxable_address();
                     $estimated_text  = '';
@@ -47,13 +62,13 @@ defined('ABSPATH') || exit;
                     if ('itemized' === get_option('woocommerce_tax_total_display')) {
                         foreach (WC()->cart->get_tax_totals() as $code => $tax) : ?>
                             <tr class="archi-totals__row archi-totals__row--tax tax-rate tax-rate-<?php echo esc_attr(sanitize_title($code)); ?>">
-                                <th><?php echo esc_html($tax->label) . $estimated_text; ?></th>
+                                <th><span class="archi-tipwrap"><?php echo esc_html($tax->label) . $estimated_text . $archi_tip_servicio; ?></span></th>
                                 <td><?php echo wp_kses_post($tax->formatted_amount); ?></td>
                             </tr>
                         <?php endforeach;
                     } else { ?>
                         <tr class="archi-totals__row archi-totals__row--tax tax-total">
-                            <th><?php echo esc_html(WC()->countries->tax_or_vat()) . $estimated_text; ?></th>
+                            <th><span class="archi-tipwrap"><?php echo esc_html(WC()->countries->tax_or_vat()) . $estimated_text . $archi_tip_servicio; ?></span></th>
                             <td><?php wc_cart_totals_taxes_total_html(); ?></td>
                         </tr>
                     <?php } endif; ?>

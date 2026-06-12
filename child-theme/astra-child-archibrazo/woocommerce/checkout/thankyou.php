@@ -100,6 +100,16 @@ if ($order) {
         ?>
 
         <?php if ($status === 'receipt-approval' || $status === 'completed') : ?>
+        <div class="archi-verif">
+            <div class="archi-verif__icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+            </div>
+            <div>
+                <b>Verificación manual</b>
+                <small>Estamos revisando tu comprobante a mano. Te avisamos por mail apenas esté confirmado.</small>
+            </div>
+        </div>
+
         <div class="archi-thankyou__card archi-thankyou__card--eta">
             <div class="archi-thankyou__card-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -125,6 +135,8 @@ if ($order) {
                 <a href="https://www.google.com/maps/place/El+Archibrazo/@-34.6048636,-58.421484,17z/data=!3m1!4b1!4m6!3m5!1s0x95bcca8a7c0dca87:0x1154aae4e74548ca!8m2!3d-34.6048681!4d-58.4168706!16s%2Fg%2F11bbrm210t" target="_blank" rel="noopener" class="archi-btn archi-btn--primary">Cómo llegar 🗺️</a>
             </div>
         </div>
+
+        <p class="archi-marginalia"><span class="archi-dingbat">✻</span> <b>Fig. V</b> fin del fascículo — la fiesta sigue en la sala</p>
 
         <!-- Confeti al abrir el paso final (feedback Alex: festejemos el último paso) -->
         <script id="archi-thankyou-confetti">

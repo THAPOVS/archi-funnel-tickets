@@ -1376,7 +1376,7 @@ add_action('wp_head', function () {
     ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <style id="archi-andralis-fontface">
     @font-face {
         font-family: 'AndralisND';
@@ -1408,6 +1408,8 @@ add_action('wp_head', function () {
 // =====================================================================
 if (!function_exists('archi_funnel_render_stepper')) {
     function archi_funnel_render_stepper($current_step = 1) {
+        // Look "pliegos del fascículo" (rebrand 2026): numeración romana,
+        // labels mono uppercase, figmark del pliego actual.
         $labels = array(
             1 => 'Ticket',
             2 => 'Datos',
@@ -1415,10 +1417,18 @@ if (!function_exists('archi_funnel_render_stepper')) {
             4 => 'Comprobante',
             5 => 'Listo',
         );
+        $romanos = array(1 => 'I', 2 => 'II', 3 => 'III', 4 => 'IV', 5 => 'V');
+        $figmarks = array(
+            1 => 'revisá lo que vas a llevarte',
+            2 => 'para mandarte el ticket',
+            3 => 'escaneá el QR desde tu app',
+            4 => 'sin esto no se genera el ticket',
+            5 => 'te avisamos cuando esté confirmado',
+        );
         $current_step = max(1, min(5, (int) $current_step));
         $current_label = $labels[$current_step];
 
-        echo '<nav class="archi-funnel-stepper" aria-label="Progreso de la compra">';
+        echo '<nav class="archi-funnel-stepper" aria-label="Paso ' . (int) $current_step . ' de 5">';
         echo '<ol class="archi-funnel-stepper__list">';
         for ($n = 1; $n <= 5; $n++) {
             $state = ($n < $current_step) ? 'completed' : (($n === $current_step) ? 'current' : 'pending');
@@ -1426,11 +1436,11 @@ if (!function_exists('archi_funnel_render_stepper')) {
             $label = $labels[$n];
 
             echo '<li class="archi-funnel-stepper__item">';
-            echo '<span class="archi-funnel-stepper__dot ' . esc_attr($state) . '" aria-current="' . ($state === 'current' ? 'step' : 'false') . '">';
+            echo '<span class="archi-funnel-stepper__dot ' . esc_attr($state) . '"' . ($state === 'current' ? ' aria-current="step"' : '') . '>';
             if ($state === 'completed') {
-                echo '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+                echo '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
             } else {
-                echo (int) $n;
+                echo esc_html($romanos[$n]);
             }
             echo '</span>';
             echo '<span class="archi-funnel-stepper__label">' . esc_html($label) . '</span>';
@@ -1440,7 +1450,8 @@ if (!function_exists('archi_funnel_render_stepper')) {
             }
         }
         echo '</ol>';
-        echo '<p class="archi-funnel-stepper__mobile">Paso ' . (int) $current_step . ' de 5 · ' . esc_html($current_label) . '</p>';
+        echo '<p class="archi-funnel-stepper__figmark"><b>Fig. ' . esc_html($romanos[$current_step]) . '</b> ' . esc_html($figmarks[$current_step]) . '</p>';
+        echo '<p class="archi-funnel-stepper__mobile">Paso ' . (int) $current_step . ' de 5 — ' . esc_html($current_label) . '</p>';
         echo '</nav>';
     }
 }
@@ -1892,6 +1903,14 @@ add_action('wp_footer', function () {
         function getAdditionalSection() { return $('.woocommerce-additional-fields'); }
 
         function updateStepper(step) {
+            var ROMANOS = { 1: 'I', 2: 'II', 3: 'III', 4: 'IV', 5: 'V' };
+            var FIGMARKS = {
+                1: 'revisá lo que vas a llevarte',
+                2: 'para mandarte el ticket',
+                3: 'escaneá el QR desde tu app',
+                4: 'sin esto no se genera el ticket',
+                5: 'te avisamos cuando esté confirmado'
+            };
             var dots = $$('.archi-funnel-stepper__dot');
             var lines = $$('.archi-funnel-stepper__line');
             dots.forEach(function (dot, idx) {
@@ -1899,13 +1918,13 @@ add_action('wp_footer', function () {
                 dot.classList.remove('pending', 'current', 'completed');
                 if (n < step) {
                     dot.classList.add('completed');
-                    dot.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+                    dot.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
                 } else if (n === step) {
                     dot.classList.add('current');
-                    dot.textContent = String(n);
+                    dot.textContent = ROMANOS[n] || String(n);
                 } else {
                     dot.classList.add('pending');
-                    dot.textContent = String(n);
+                    dot.textContent = ROMANOS[n] || String(n);
                 }
             });
             lines.forEach(function (line, idx) {
@@ -1913,10 +1932,14 @@ add_action('wp_footer', function () {
                 if (n < step) line.classList.add('completed');
                 else line.classList.remove('completed');
             });
+            var labels = { 1: 'Ticket', 2: 'Datos', 3: 'Pagar', 4: 'Comprobante', 5: 'Listo' };
             var mobile = $('.archi-funnel-stepper__mobile');
             if (mobile) {
-                var labels = { 1: 'Ticket', 2: 'Datos', 3: 'Pagar', 4: 'Comprobante', 5: 'Listo' };
-                mobile.textContent = 'Paso ' + step + ' de 5 · ' + (labels[step] || '');
+                mobile.textContent = 'Paso ' + step + ' de 5 — ' + (labels[step] || '');
+            }
+            var figmark = $('.archi-funnel-stepper__figmark');
+            if (figmark) {
+                figmark.innerHTML = '<b>Fig. ' + (ROMANOS[step] || step) + '</b> ' + (FIGMARKS[step] || '');
             }
         }
 

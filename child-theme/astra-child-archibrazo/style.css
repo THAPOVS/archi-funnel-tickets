@@ -11,26 +11,70 @@
 
 /* ============================================================
    PALETA Y VARIABLES
+   Tokens alineados al design system del sitio nuevo (rebrand 2026,
+   handoff design_handoff_funnel_tickets/css/tokens.css).
+   Se mantienen los aliases --archi-* para compatibilidad con el
+   CSS existente del child theme.
    ============================================================ */
 :root {
+    /* Base dark */
+    --archi-black: #0a0a0a;
+    --archi-night: #161616;
+    --archi-night-2: #1c1c1c;
+    --archi-line: #242424;
+    --archi-line-2: #3a3a3a;
+
+    /* Acentos */
     --archi-pink: #ff3d7f;
     --archi-orange: #ff8a3d;
     --archi-yellow: #fbbf24;
     --archi-green: #34d399;
     --archi-red: #f87171;
-    --archi-ink-900: #0a0a0a;
+
+    /* Estados deep (fondos de badges/banners) */
+    --archi-green-deep: #0f2a1e;
+    --archi-amber-deep: #26200d;
+    --archi-red-deep: #241619;
+
+    /* Cream (neutros tibios sobre dark) */
+    --archi-cream: #f5f1ea;
+    --archi-cream-soft: #d6cfc1;
+    --archi-muted: #a8a29e;
+    --archi-muted-2: #6f6a63;
+    --archi-muted-3: #8a8378;
+
+    /* Aliases legacy (NO borrar: el CSS de abajo los referencia) */
+    --archi-ink-900: var(--archi-black);
     --archi-ink-800: #101010;
-    --archi-ink-700: #161616;
+    --archi-ink-700: var(--archi-night);
     --archi-ink-600: #1f1f1f;
     --archi-ink-500: #2a2a2a;
-    --archi-paper-50: #f5f1ea;
-    --archi-paper-200: #d6cfc1;
-    --archi-paper-400: #a8a29e;
+    --archi-paper-50: var(--archi-cream);
+    --archi-paper-200: var(--archi-cream-soft);
+    --archi-paper-400: var(--archi-muted);
     --archi-border: rgba(245, 241, 234, 0.08);
     --archi-border-strong: rgba(245, 241, 234, 0.14);
     --archi-card-bg: linear-gradient(180deg, var(--archi-ink-700), var(--archi-ink-600));
     --archi-shadow: 0 1px 0 rgba(245, 241, 234, 0.04) inset, 0 24px 48px -24px rgba(0, 0, 0, 0.7);
     --archi-gradient: linear-gradient(95deg, var(--archi-pink), var(--archi-orange));
+    --archi-gradient-soft: linear-gradient(135deg, rgba(255,61,127,0.18) 0%, rgba(255,138,61,0.10) 100%);
+
+    /* Tipografías */
+    --archi-font-display: 'AndralisND', 'Times New Roman', Georgia, serif;
+    --archi-font-body: 'Manrope', 'Helvetica Neue', Arial, sans-serif;
+    --archi-font-mono: 'JetBrains Mono', 'SF Mono', Menlo, monospace;
+
+    /* Radii */
+    --archi-r-sm: 10px;
+    --archi-r-md: 14px;
+    --archi-r-lg: 20px;
+    --archi-r-pill: 999px;
+
+    /* Motion */
+    --archi-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+    --archi-t-fast: 0.18s;
+    --archi-t-base: 0.25s;
+    --archi-t-slow: 0.4s;
 }
 
 /* ============================================================
@@ -140,7 +184,9 @@ body.woocommerce-checkout h1.entry-title {
 }
 
 /* ============================================================
-   STEPPER (rendered desde functions.php)
+   STEPPER "pliegos del fascículo" (rendered desde functions.php)
+   Look del rebrand 2026: glifos romanos, labels mono uppercase,
+   separadores que se llenan de verde, figmark del pliego actual.
    ============================================================ */
 .archi-funnel-stepper {
     max-width: 920px;
@@ -157,57 +203,105 @@ body.woocommerce-checkout h1.entry-title {
     padding: 0;
 }
 .archi-funnel-stepper__item {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 8px;
     flex-shrink: 0;
 }
 .archi-funnel-stepper__dot {
-    width: 36px;
-    height: 36px;
-    border-radius: 999px;
-    display: flex;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    font-size: 14px;
-    font-family: 'Manrope', sans-serif;
-    transition: all 220ms ease;
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 11px;
+    transition: all var(--archi-t-base) var(--archi-ease-out);
     flex-shrink: 0;
 }
 .archi-funnel-stepper__dot.pending {
-    background: var(--archi-ink-600);
-    color: var(--archi-paper-400);
-    border: 1px solid var(--archi-border);
+    background: none;
+    color: var(--archi-muted);
+    border: 1px solid var(--archi-line-2);
 }
 .archi-funnel-stepper__dot.current {
     background: var(--archi-gradient);
     color: white;
-    box-shadow: 0 0 0 4px rgba(255, 61, 127, 0.15), 0 8px 16px -8px rgba(255, 61, 127, 0.5);
+    border: 1px solid transparent;
+    box-shadow: 0 6px 18px rgba(255, 61, 127, 0.35);
 }
 .archi-funnel-stepper__dot.completed {
-    background: var(--archi-green);
-    color: var(--archi-ink-900);
+    background: var(--archi-green-deep);
+    color: var(--archi-green);
+    border: 1px solid var(--archi-green);
 }
 .archi-funnel-stepper__line {
     flex: 1;
-    min-width: 24px;
-    height: 2px;
-    background: var(--archi-border);
-    transition: background 220ms ease;
+    min-width: 12px;
+    height: 1px;
+    background: var(--archi-line-2);
+    position: relative;
+    overflow: hidden;
 }
-.archi-funnel-stepper__line.completed { background: var(--archi-green); }
+.archi-funnel-stepper__line::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--archi-green);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--archi-t-slow) var(--archi-ease-out);
+}
+.archi-funnel-stepper__line.completed::after { transform: scaleX(1); }
 .archi-funnel-stepper__label {
-    font-size: 14px;
-    font-family: 'Manrope', sans-serif;
-    color: var(--archi-paper-400);
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--archi-muted-2);
+    transition: color var(--archi-t-base);
+}
+.archi-funnel-stepper__item .completed ~ .archi-funnel-stepper__label,
+.archi-funnel-stepper__item:has(.completed) .archi-funnel-stepper__label {
+    color: var(--archi-muted);
+}
+.archi-funnel-stepper__item:has(.current) .archi-funnel-stepper__label {
+    color: var(--archi-cream);
 }
 .archi-funnel-stepper__mobile {
     display: none;
     text-align: center;
-    color: var(--archi-paper-400);
-    font-size: 13px;
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--archi-muted);
     margin-top: 12px;
+}
+/* Figmark del pliego actual (lenguaje fascículo) */
+.archi-funnel-stepper__figmark {
+    margin: 14px 0 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--archi-font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--archi-cream-soft);
+}
+.archi-funnel-stepper__figmark b {
+    font-family: var(--archi-font-mono);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--archi-pink);
 }
 
 /* ============================================================
@@ -1771,4 +1865,154 @@ table.woocommerce-table--order-details {
         animation-duration: 0.01ms !important;
         transition-duration: 0.01ms !important;
     }
+}
+
+/* ============================================================
+   REBRAND 2026 · componentes nuevos del design handoff
+   (design_handoff_funnel_tickets — lenguaje "fascículo")
+   ============================================================ */
+
+/* ---- Chips de variante (cart + thankyou) */
+.archi-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 4px 0 2px;
+}
+.archi-chip {
+    font-family: var(--archi-font-mono);
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--archi-muted);
+    background: var(--archi-night-2);
+    border: 1px solid var(--archi-line-2);
+    border-radius: var(--archi-r-pill);
+    padding: 4px 10px;
+}
+.archi-chip--pink {
+    color: var(--archi-pink);
+    border-color: rgba(255, 61, 127, 0.4);
+    background: rgba(255, 61, 127, 0.08);
+}
+
+/* ---- Tooltip del cargo del servicio */
+.archi-tipwrap { display: inline-flex; align-items: center; gap: 7px; }
+.archi-tip {
+    position: relative;
+    display: inline-flex;
+    color: var(--archi-muted-2);
+    cursor: help;
+}
+.archi-tip:hover, .archi-tip:focus { color: var(--archi-pink); outline: none; }
+.archi-tip__bubble {
+    position: absolute;
+    bottom: calc(100% + 9px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 210px;
+    padding: 10px 13px;
+    background: var(--archi-cream);
+    color: var(--archi-black);
+    border-radius: var(--archi-r-sm);
+    font-family: var(--archi-font-body);
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1.45;
+    letter-spacing: 0;
+    text-transform: none;
+    text-align: left;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--archi-t-fast), transform var(--archi-t-fast);
+    z-index: 30;
+    pointer-events: none;
+}
+.archi-tip__bubble::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: var(--archi-cream);
+}
+.archi-tip:hover .archi-tip__bubble,
+.archi-tip:focus .archi-tip__bubble {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* ---- Bloque "Verificación manual" (thankyou, estado receipt-approval) */
+.archi-verif {
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    background: var(--archi-amber-deep);
+    border: 1px solid rgba(251, 191, 36, 0.32);
+    border-radius: var(--archi-r-md);
+    padding: 14px 16px;
+    margin: 0 0 18px;
+    text-align: left;
+}
+.archi-verif__icon { color: var(--archi-yellow); flex: none; margin-top: 1px; }
+.archi-verif b {
+    display: block;
+    font-family: var(--archi-font-body);
+    font-size: 13.5px;
+    color: var(--archi-cream);
+    margin-bottom: 2px;
+}
+.archi-verif small {
+    font-size: 12px;
+    color: var(--archi-muted);
+    line-height: 1.45;
+}
+
+/* ---- Marginalia (frase italic con dingbat, toque fascículo) */
+.archi-marginalia {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    font-family: var(--archi-font-display);
+    font-style: italic;
+    font-size: 13px;
+    color: var(--archi-muted-3);
+    margin-top: 18px;
+}
+.archi-marginalia b {
+    font-family: var(--archi-font-mono);
+    font-style: normal;
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--archi-orange);
+    white-space: nowrap;
+}
+.archi-marginalia .archi-dingbat { color: var(--archi-pink); font-style: normal; }
+
+/* ---- Banner crítico: actualizar look al amber-deep del rebrand */
+.archi-funnel-pay-banner,
+.archi-warn {
+    background: var(--archi-amber-deep) !important;
+    border: 1px solid rgba(251, 191, 36, 0.4) !important;
+    border-radius: var(--archi-r-md) !important;
+}
+
+/* ---- Eyebrows en mono (look fascículo en headers de sección) */
+.archi-page-heading .archi-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+.archi-page-heading .archi-eyebrow::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    background: currentColor;
+    transform: rotate(45deg);
 }
