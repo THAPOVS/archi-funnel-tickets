@@ -2519,6 +2519,33 @@ body.woocommerce-order-received .archi-thankyou .woocommerce-order-details.archi
 }
 
 /* ============================================================
+   PASO 5 · TODOS LOS BLOQUES AL MISMO ANCHO (feedback Joaco 13/6)
+   Verificación / "Te llega el ticket" / resumen / GIF / "Mientras
+   tanto" tenían 720, 640 y 340px sueltos. Unificados a 640px
+   centrados (mismo ancho que las cards del paso 3 y 4).
+   ============================================================ */
+body.woocommerce-order-received .archi-thankyou {
+    max-width: 640px;
+}
+body.woocommerce-order-received .archi-verif,
+body.woocommerce-order-received .archi-thankyou__card,
+body.woocommerce-order-received .archi-thankyou__summary,
+body.woocommerce-order-received .archi-thankyou__resumen,
+body.woocommerce-order-received .archi-thankyou__more,
+body.woocommerce-order-received .archi-thankyou__upload-wrap,
+body.woocommerce-order-received .archi-thankyou__gif {
+    max-width: 100% !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box;
+}
+/* El GIF ocupa el ancho completo de la columna (antes 340px centrado) */
+body.woocommerce-order-received .archi-thankyou__gif {
+    width: 100% !important;
+    border-radius: var(--archi-r-lg);
+}
+
+/* ============================================================
    COMPACTACIÓN DESKTOP (feedback Joaco 12/6): menos aire, que el
    CTA quede visible sin scrollear en el paso 3
    ============================================================ */
