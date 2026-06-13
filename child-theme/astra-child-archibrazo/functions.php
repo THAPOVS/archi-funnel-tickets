@@ -2167,7 +2167,24 @@ add_action('wp_footer', function () {
                 if (n < step) line.classList.add('completed');
                 else line.classList.remove('completed');
             });
+            // Sincronizar clickeabilidad: los pasos completados navegan hacia
+            // atrás (el render server-side solo marca los del primer load).
             var labels = { 1: 'Ticket', 2: 'Datos', 3: 'Pagar', 4: 'Comprobante', 5: 'Listo' };
+            $$('.archi-funnel-stepper__item').forEach(function (item) {
+                var n = parseInt(item.getAttribute('data-step'), 10);
+                if (!n) return;
+                if (n < step) {
+                    item.classList.add('is-clickable');
+                    item.setAttribute('role', 'button');
+                    item.setAttribute('tabindex', '0');
+                    item.setAttribute('title', 'Volver a ' + (labels[n] || ''));
+                } else {
+                    item.classList.remove('is-clickable');
+                    item.removeAttribute('role');
+                    item.removeAttribute('tabindex');
+                    item.removeAttribute('title');
+                }
+            });
             var mobile = $('.archi-funnel-stepper__mobile');
             if (mobile) {
                 mobile.textContent = 'Paso ' + step + ' de 5 — ' + (labels[step] || '');
