@@ -130,17 +130,6 @@ if ($order) {
             </div>
         </div>
 
-        <div class="archi-thankyou__card archi-thankyou__card--eta">
-            <div class="archi-thankyou__card-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div class="archi-thankyou__card-body">
-                <p class="archi-thankyou__card-title">Te llega el ticket por mail</p>
-                <p class="archi-thankyou__card-sub">Te mandamos los tickets a <strong><?php echo esc_html($email); ?></strong> dentro de las próximas 24/48 horas.</p>
-                <p class="archi-thankyou__card-sub">Nuestros ingenieros de sistemas ya tienen tus datos 😸</p>
-            </div>
-        </div>
-
         <?php
         // Card resumen del pedido (design handoff): ítem con póster + chips
         // + tabla Pedido / Fecha del show / Total pagado.
@@ -204,12 +193,25 @@ if ($order) {
             </div>
         </div>
 
-        <img src="https://www.archibrazo.org/wp-content/uploads/2026/05/gato-archibrazo.gif"
-             alt="Gatito"
-             width="380" height="264"
-             class="archi-thankyou__gif" loading="lazy" decoding="async">
+        <?php // "Te llega el ticket por mail" + GIF adentro de la misma card, debajo del resumen (Joaco 13/6). ?>
+        <div class="archi-thankyou__card archi-thankyou__card--eta archi-thankyou__card--withgif">
+            <div class="archi-thankyou__card-head">
+                <div class="archi-thankyou__card-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <div class="archi-thankyou__card-body">
+                    <p class="archi-thankyou__card-title">Te llega el ticket por mail</p>
+                    <p class="archi-thankyou__card-sub">Te mandamos los tickets a <strong><?php echo esc_html($email); ?></strong> dentro de las próximas 24/48 horas.</p>
+                    <p class="archi-thankyou__card-sub">Nuestros ingenieros de sistemas ya tienen tus datos 😸</p>
+                </div>
+            </div>
+            <img src="https://www.archibrazo.org/wp-content/uploads/2026/05/gato-archibrazo.gif"
+                 alt="Gatito tipeando en la compu"
+                 width="380" height="264"
+                 class="archi-thankyou__gif" loading="lazy" decoding="async">
+        </div>
 
-        <!-- "Mientras tanto" va justo debajo del GIF (feedback de Joaco, 2026-05-20). -->
+        <!-- "Mientras tanto" debajo de la card del ticket. -->
         <div class="archi-thankyou__more">
             <p class="archi-thankyou__more-title">Mientras tanto</p>
             <p class="archi-thankyou__more-sub">Te esperamos en Mario Bravo 441, Almagro. Caé tipo media hora antes del evento, tomá o comé algo en nuestro bar, así vivís el Archi desde que entrás.</p>

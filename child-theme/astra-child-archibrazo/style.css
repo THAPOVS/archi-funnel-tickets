@@ -2539,10 +2539,25 @@ body.woocommerce-order-received .archi-thankyou__gif {
     margin-right: auto !important;
     box-sizing: border-box;
 }
-/* El GIF ocupa el ancho completo de la columna (antes 340px centrado) */
-body.woocommerce-order-received .archi-thankyou__gif {
+/* Card "Te llega el ticket" con GIF adentro (Joaco 13/6): el head
+   (icono + texto) en fila arriba, el GIF más chico y centrado debajo. */
+body.woocommerce-order-received .archi-thankyou__card--withgif {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 18px;
+}
+body.woocommerce-order-received .archi-thankyou__card--withgif .archi-thankyou__card-head {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+body.woocommerce-order-received .archi-thankyou__card--withgif .archi-thankyou__gif {
     width: 100% !important;
-    border-radius: var(--archi-r-lg);
+    max-width: 240px !important;
+    height: auto !important;
+    margin: 0 auto !important;
+    border-radius: var(--archi-r-md);
+    display: block;
 }
 
 /* ============================================================
