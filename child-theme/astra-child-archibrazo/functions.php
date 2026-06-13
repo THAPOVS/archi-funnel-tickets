@@ -796,16 +796,20 @@ add_action('wp_head', function () {
         min-height: 80px;
     }
 
-    /* THANK-YOU: control custom de archivo (el input nativo "Choose file" pasa desapercibido).
-       JS reemplaza el input con un wrapper .archi-file-control que tiene un botón visible
-       "Elegir archivo" + un texto con el nombre del archivo elegido. */
+    /* THANK-YOU: el control de archivo es ahora el dropzone del rebrand 2026
+       (.archi-fdrop + .archi-ffile dentro de .archi-file-control). El wrapper
+       va en bloque full-width: dropzone y card de archivo se alternan, nunca
+       conviven lado a lado. */
     html body.woocommerce-order-received .archi-file-control {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 16px !important;
+        display: block !important;
+        width: 100% !important;
         margin: 8px 0 !important;
-        flex-wrap: wrap !important;
-        justify-content: center !important;
+    }
+    /* El atributo hidden tiene que ganar SIEMPRE (el display de .archi-ffile
+       lo pisaba y se veían los dos estados a la vez). */
+    html body.woocommerce-order-received .archi-fdrop[hidden],
+    html body.woocommerce-order-received .archi-ffile[hidden] {
+        display: none !important;
     }
     html body.woocommerce-order-received .archi-file-control__btn {
         display: inline-block !important;

@@ -2307,6 +2307,11 @@ body.woocommerce-cart .archi-totals__header { display: none; }
     color: var(--archi-green);
     text-align: left;
 }
+/* hidden gana siempre: dropzone y card de archivo nunca conviven */
+.archi-fdrop[hidden],
+.archi-ffile[hidden] {
+    display: none !important;
+}
 .archi-ffile svg { flex: none; }
 .archi-ffile__name { flex: 1; min-width: 0; }
 .archi-ffile__name b {
