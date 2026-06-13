@@ -2525,7 +2525,7 @@ body.woocommerce-order-received .archi-thankyou .woocommerce-order-details.archi
    centrados (mismo ancho que las cards del paso 3 y 4).
    ============================================================ */
 body.woocommerce-order-received .archi-thankyou {
-    max-width: 640px;
+    max-width: 760px;
 }
 body.woocommerce-order-received .archi-verif,
 body.woocommerce-order-received .archi-thankyou__card,
@@ -2553,7 +2553,7 @@ body.woocommerce-order-received .archi-thankyou__card--withgif .archi-thankyou__
 }
 body.woocommerce-order-received .archi-thankyou__card--withgif .archi-thankyou__gif {
     width: 100% !important;
-    max-width: 240px !important;
+    max-width: 280px !important;
     height: auto !important;
     margin: 0 auto !important;
     border-radius: var(--archi-r-md);
